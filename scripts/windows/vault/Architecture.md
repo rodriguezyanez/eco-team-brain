@@ -1,0 +1,4 @@
+﻿# Architecture
+
+**Tipo:** `Topic`
+

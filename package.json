@@ -1,0 +1,26 @@
+{
+  "name": "ecosistema-klap",
+  "version": "1.0.0",
+  "description": "Ecosistema de herramientas Team Brain - Klap para estandarización de desarrollo.",
+  "main": "index.js",
+  "bin": {
+    "klap": "./bin/klap.js",
+    "klap-sync": "./bin/klap-sync.js",
+    "klap-init": "./bin/klap-init.js",
+    "klap-rollback": "./bin/klap-rollback.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "klap",
+    "brain",
+    "ecosystem",
+    "cli"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "shelljs": "^0.8.5"
+  }
+}
