@@ -1,0 +1,30 @@
+# Dependencias de Node.js
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos temporales de Node.js
+*.pid
+*.seed
+*.pid.lock
+
+# Archivos de respaldo generados por scripts
+*.backup
+*.bak
+
+# Exports temporales de Neo4j
+teambrain-export-*.json
+brain-export-*.json
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos temporales
+*.tmp
+*.temp
+~$*
