@@ -1,7 +1,7 @@
 {
   "name": "ecosistema-klap",
   "version": "1.0.0",
-  "description": "Ecosistema de herramientas Team Brain - Klap para estandarización de desarrollo.",
+  "description": "Ecosistema Klap - Herramientas para estandarización de desarrollo y memoria compartida.",
   "main": "index.js",
   "bin": {
     "klap": "./bin/klap.js",

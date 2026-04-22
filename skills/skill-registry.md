@@ -1,4 +1,4 @@
-# Team Brain — Skill Registry KLAP BYSF
+# Ecosistema Klap — Skill Registry KLAP BYSF
 
 > Fallback local del conocimiento del equipo cuando Neo4j no esta disponible.
 > Este archivo es el punto de entrada. Leelo primero, luego ve al skill especifico.
@@ -10,7 +10,7 @@
 El Skill Registry es el indice central del conocimiento codificado del equipo KLAP BYSF.
 Cada skill es un archivo Markdown con templates, patrones y reglas listas para usar.
 
-Cuando Neo4j (Team Brain) no esta disponible, estos archivos son la fuente de verdad local.
+Cuando Neo4j (Ecosistema Klap) no esta disponible, estos archivos son la fuente de verdad local.
 Cuando Neo4j SI esta disponible, los skills complementan la memoria del grafo con ejemplos concretos de codigo.
 
 ---
@@ -47,60 +47,31 @@ Cuando Neo4j SI esta disponible, los skills complementan la memoria del grafo co
 
 ## Reglas globales siempre activas
 
-Estas reglas aplican a TODO el codigo generado, sin excepcion y sin necesidad de consultarlo en memoria.
+Estas reglas aplican a TODO el codigo generado, sin excepcion.
 
 ### 1. JavaDoc OBLIGATORIO
 
-JavaDoc en todos los metodos publicos. Sin excepcion. Formato:
-
-```java
-/**
- * [Descripcion del objetivo en una oracion].
- * [Contexto adicional si es necesario].
- *
- * @param nombre descripcion
- * @return descripcion (omitir si es void)
- * @throws XxxException cuando [condicion]
- */
-```
+JavaDoc en todos los metodos publicos. Sin excepcion.
 
 ### 2. JdbcTemplate — NUNCA JPA/Hibernate
 
-El equipo usa `JdbcTemplate` con queries en constantes (`ConstantsQuery`).
-JPA/Hibernate esta prohibido. No proponer ni generar codigo con `@Entity`, `@Repository` de Spring Data, ni `EntityManager`.
+El equipo usa `JdbcTemplate` con queries en constantes (`ConstantsQuery`). JPA/Hibernate esta prohibido.
 
 ### 3. Kafka: enable.metrics.push=false
 
-Todas las configuraciones Kafka deben incluir:
-```java
-props.put("enable.metrics.push", "false");
-```
+Todas las configuraciones Kafka deben incluir: `props.put("enable.metrics.push", "false");`.
 
 ### 4. Kafka: max.poll.records=1
 
-Todos los consumers Kafka deben configurar:
-```java
-props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
-```
-Procesamos un mensaje a la vez para garantizar orden y trazabilidad.
+Todos los consumers Kafka deben configurar: `props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");`.
 
 ### 5. Paginacion cursor-based para tablas grandes
 
-Para tablas con mas de 500 registros, usar paginacion cursor-based (por ID o timestamp), nunca `LIMIT/OFFSET` con paginas grandes.
+Para tablas con mas de 500 registros, usar paginacion cursor-based, nunca `LIMIT/OFFSET`.
 
 ### 6. Cobertura 95% con JaCoCo
 
-El build falla si la cobertura es menor al 95%. Configurar en `build.gradle`:
-```gradle
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit { minimum = 0.95 }
-        }
-    }
-}
-check.dependsOn jacocoTestCoverageVerification
-```
+El build falla si la cobertura es menor al 95%.
 
 ### 7. Naming obligatorio
 
@@ -120,17 +91,17 @@ check.dependsOn jacocoTestCoverageVerification
 
 ## Indice de skills
 
-| Skill | Archivo | Que contiene | Cuando usarlo |
-|-------|---------|--------------|---------------|
-| Kafka Config | `kafka-config.md` | Template `KafkaConsumerConfig` y `KafkaProducerConfig` con todas las props obligatorias | Al crear un nuevo dominio con Kafka |
-| Kafka Listener | `kafka-listener.md` | Template `@KafkaListener` con circuit breaker, manejo de errores y DLQ | Al crear un consumer Kafka |
-| Processor (Saga) | `processor.md` | Template del patron saga de 6 pasos con transicion de estados | Al crear la logica de procesamiento de un dominio |
-| Repository | `repository.md` | Template `XxxRepository` con `JdbcTemplate`, `ConstantsQuery` y cursor-based pagination | Al crear acceso a datos |
-| WebClient | `webclient.md` | Template `XxxClient` con retry, timeout, manejo de 4xx/5xx y circuit breaker | Al integrar un servicio externo via HTTP |
-| Exceptions | `exceptions.md` | Jerarquia de excepciones del dominio: `XxxException`, `XxxNotFoundException`, `XxxClientException` | Al definir el manejo de errores de un nuevo dominio |
-| Testing | `testing.md` | Template de tests con Mockito (AAA), test de repositorio y test de cliente con MockWebServer | Al escribir tests unitarios |
-| OpenAPI | `openapi.md` | Template `OpenApiConfig` para perfiles local/develop, anotaciones de controllers | Al exponer la API con Swagger |
-| Crear Microfrontend | `crear-microfrontend.md` | Patron 1 (mcf-bo + BFF existente, CRUD Aurora) y Patron 2 (mcf-bysf + BFF propio, proxy API externa). Angular 19 + single-spa | Al crear un nuevo MCF o BFF frontend |
+| Skill | Archivo | Que contiene |
+|-------|---------|--------------|
+| Kafka Config | `kafka-config.md` | Template `KafkaConsumerConfig` y `KafkaProducerConfig` con props obligatorias |
+| Kafka Listener | `kafka-listener.md` | Template `@KafkaListener` con circuit breaker, manejo de errores y DLQ |
+| Processor (Saga) | `processor.md` | Template del patron saga de 6 pasos con transicion de estados |
+| Repository | `repository.md` | Template `XxxRepository` con `JdbcTemplate`, `ConstantsQuery` y cursor-based pagination |
+| WebClient | `webclient.md` | Template `XxxClient` con retry, timeout, manejo de 4xx/5xx |
+| Exceptions | `exceptions.md` | Jerarquia de excepciones del dominio |
+| Testing | `testing.md` | Template de tests con Mockito (AAA) y MockWebServer |
+| OpenAPI | `openapi.md` | Template `OpenApiConfig` para perfiles local/develop |
+| Crear Microfrontend | `crear-microfrontend.md` | Angular 19 + single-spa para MCF-BO y MCF-BYSF |
 
 ---
 
@@ -163,4 +134,4 @@ Al agregar solo un componente puntual, ir directamente al skill correspondiente.
 
 ---
 
-*Skill Registry v2.1 · KLAP BYSF · Abril 2026 · 9 skills disponibles*
+*Ecosistema Klap · Skill Registry v3.0 · Abril 2026*

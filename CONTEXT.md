@@ -1,11 +1,11 @@
-# Team Brain — Contexto del proyecto
+# Ecosistema Klap — Contexto del proyecto
 
 Este archivo es el punto de entrada para Claude Code. Resume todo lo construido,
 el estado actual y los próximos pasos. Léelo completo antes de continuar.
 
 ---
 
-## Qué es Team Brain
+## Qué es el Ecosistema Klap
 
 Un ecosistema de memoria compartida para el equipo de desarrollo KLAP BYSF.
 Combina Neo4j (grafo de conocimiento), Claude Code (asistente) y MCP (protocolo
@@ -24,58 +24,42 @@ Dev 3 (Claude Code)
 
 - **Neo4j**: corre en Docker con volúmenes persistentes. Los datos sobreviven a reinicios.
 - **MCP**: paquete `@knowall-ai/mcp-neo4j-agent-memory` registrado con scope `user` en Claude Code.
-- **CLAUDE.md**: sistema prompt que activa protocolos de memoria, niveles de asistencia y JavaDoc obligatorio.
+- **CLAUDE-TEMPLATE.md**: sistema prompt que activa protocolos de memoria, niveles de asistencia y JavaDoc obligatorio.
 
 ---
 
 ## Archivos del ecosistema
 
 ```
-team-brain/
+ecosistema-klap/
 │
 ├── docker-compose.yml         Neo4j 5.18 Community — puertos 7474 y 7687
 │                              4 volúmenes persistentes (datos sobreviven a reinicios)
 │
-├── CLAUDE.md                  System prompt del equipo para Claude Code
+├── CLAUDE-TEMPLATE.md         System prompt del equipo para Claude Code
 │                              Instalar en: %USERPROFILE%\.claude\CLAUDE.md (Windows)
 │                                           ~/.claude/CLAUDE.md (Linux/macOS)
+│
+├── package.json               Configuración del paquete global Node.js
+│
+│── bin/ ──────────────────────────────────────────────────────────────
+├── klap.js                    Orquestador CLI principal (comando 'klap')
+├── klap-init.js               Alias para 'klap init'
+├── klap-sync.js               Alias para 'klap sync'
+├── klap-rollback.js           Alias para 'klap rollback'
+│
+│── scripts/ ──────────────────────────────────────────────────────────
+├── windows/                   Scripts PowerShell y Batch para Windows
+└── linux/                     Scripts Bash para Linux/macOS
 │
 │── Documentación ─────────────────────────────────────────────────────
 ├── README.md                  Documentación general y referencia rápida
 ├── GUIA-PRACTICA.md           Wizard de instalación paso a paso (todos los SO)
-├── ONBOARDING.md              Guía del ecosistema para nuevos integrantes
+├── ONBOARDING.md              Filosofía, flujos de trabajo y porqués del equipo
 ├── CONTEXT.md                 Este archivo — estado actual y referencia rápida
 │
-│── Windows ────────────────────────────────────────────────────────────
-├── setup.bat                  Instalador/desinstalador unificado
-│                              setup.bat --uninstall para desinstalar
-├── brain.bat                  Operaciones diarias: up, down, status, logs, browser
-├── init-brain.bat             Inicialización de Neo4j (ejecutar UNA vez)
-├── enrich-brain.bat           Carga arquitectura de referencia KLAP BYSF
-├── brain-update.bat           Sincronización incremental (preserva memoria acumulada)
-├── install-skills.bat         Instala skill files en %USERPROFILE%\.claude\skills\
-├── install-hooks.bat          Instala hook pre-commit Guardian Angel en un proyecto
-├── brain-sync.bat             Sincroniza memorias locales pendientes con Neo4j
-├── brain-export.ps1           Exporta grafo completo a JSON (brain.bat export)
-├── brain-import.ps1           Mergea export de otro dev en Neo4j (brain.bat import)
-├── backup.bat                 Backup y restore de volúmenes Docker
-├── export-obsidian.bat        Exporta el grafo Neo4j a archivos Markdown para Obsidian
-│
-│── Linux / macOS ──────────────────────────────────────────────────────
-├── setup.sh                   Instalador/desinstalador unificado
-│                              ./setup.sh --uninstall para desinstalar
-├── init-brain.sh              Inicialización de Neo4j (ejecutar UNA vez)
-├── enrich-brain.sh            Carga arquitectura de referencia KLAP BYSF
-├── brain-update.sh            Sincronización incremental
-├── install-skills.sh          Instala skill files en ~/.claude/skills/
-├── install-hooks.sh           Instala hook pre-commit Guardian Angel en un proyecto
-├── brain-sync.sh              Sincroniza memorias locales pendientes con Neo4j
-├── brain-export.sh            Exporta grafo completo a JSON (./brain-export.sh [file])
-├── brain-import.sh            Mergea export de otro dev en Neo4j (./brain-import.sh <file>)
-├── backup.sh                  Backup y restore de volúmenes Docker
-│
 │── Skills locales (fallback cuando Neo4j no está disponible) ──────────
-└── skills/                    Copiados a ~/.claude/skills/ por install-skills.*
+└── skills/                    Copiados a ~/.claude/skills/ por klap init
     ├── skill-registry.md      Índice de skills — leer primero
     ├── kafka-config.md        Template KafkaConfig
     ├── kafka-listener.md      Template KafkaListener
@@ -94,21 +78,20 @@ team-brain/
 ## Estado actual
 
 ### Neo4j
-- Corriendo en Docker en la máquina local de Juan Pablo
+- Corriendo en Docker en la máquina local.
 - Base de datos: `neo4j` (Community Edition — no soporta múltiples DBs)
-- Nodos base cargados por `init-brain.bat`: Team, Architecture, Decisions, Conventions
+- Nodos base cargados por `klap init`: Team, Architecture, Decisions, Conventions
 
 ### MCP
 - Paquete: `@knowall-ai/mcp-neo4j-agent-memory`
 - Variables de entorno: `NEO4J_URI=bolt://localhost:7687`, `NEO4J_USERNAME=neo4j`, `NEO4J_PASSWORD=team-brain-2025`, `NEO4J_DATABASE=neo4j`
 - Estado: **conectado** (`✓ Connected` en `claude mcp list`)
 - Scope: user (disponible en todos los proyectos)
-- **IMPORTANTE**: el MCP anterior `@jovanhsu/mcp-neo4j-memory-server` fue eliminado de npm. Usar siempre `@knowall-ai/mcp-neo4j-agent-memory`.
 
-### enrich-brain / skills / CLAUDE.md
+### klap init / skills / CLAUDE-TEMPLATE.md
 - Arquitectura de referencia KLAP BYSF cargada en Neo4j (20+ nodos)
 - Skill files instalados en `%USERPROFILE%\.claude\skills\`
-- `CLAUDE.md` instalado en `%USERPROFILE%\.claude\CLAUDE.md`
+- `CLAUDE-TEMPLATE.md` instalado en `%USERPROFILE%\.claude\CLAUDE.md`
 
 ---
 
@@ -143,7 +126,7 @@ Standard KLAP BYSF (raíz)
 
 ## Comportamiento de Claude
 
-El CLAUDE.md asume siempre perfil **senior**: directo al punto, sin explicaciones innecesarias, conocimiento profundo del stack y los patrones del equipo. No hay niveles configurables.
+El CLAUDE.md asume siempre perfil **senior**: directo al punto, sin explicaciones innecesarias, conocimiento profundo del stack y los patrones del equipo.
 
 Protocolo de inicio de sesión:
 1. Preguntar en qué proyecto o microservicio se va a trabajar
@@ -161,61 +144,18 @@ Protocolo de inicio de sesión:
 
 ---
 
-## Comandos de referencia rápida
+## Comandos de referencia rápida (vía CLI `klap`)
 
-```bat
-:: Operaciones diarias
-brain.bat up             :: levantar Neo4j
-brain.bat down           :: detener
-brain.bat status         :: ver estado
-brain.bat logs           :: ver logs en vivo
-brain.bat browser        :: abrir http://localhost:7474
+```bash
+# Operaciones principales
+klap init      # Inicializa DB, constraints, nodos base y skills
+klap sync      # Sincroniza memorias locales pendientes
+klap update    # Sincroniza arquitectura de referencia (incremental)
+klap rollback  # Revierte configuración y detiene Neo4j
 
-:: Setup inicial (una sola vez por máquina)
-setup.bat                :: instalador unificado — hace todo automáticamente
-init-brain.bat           :: inicialización base (NO volver a ejecutar)
-brain.bat mcp            :: registrar team-brain + Context7 en Claude Code
-enrich-brain.bat         :: cargar arquitectura KLAP BYSF en Neo4j
-install-skills.bat       :: instalar skill files en %USERPROFILE%\.claude\skills\
-
-:: Desinstalar
-setup.bat --uninstall    :: restaura config del usuario y elimina Neo4j + datos
-
-:: Actualización incremental (cuando cambia la arquitectura de referencia)
-brain.bat update         :: sincronizar nodos Standard en Neo4j (preserva memoria)
-
-:: Memoria local pendiente
-brain.bat sync           :: sincronizar memorias locales con Neo4j
-
-:: Consolidación de grafos entre devs
-brain.bat export [file]  :: exportar grafo completo a JSON
-brain.bat import <file>  :: mergear export de otro dev (agrega solo lo que falta)
-
-:: Backup de volúmenes Docker
-backup.bat               :: crear backup
-backup.bat list          :: listar backups
-backup.bat restore <f>   :: restaurar
-
-:: Verificar en Neo4j Browser
-MATCH (n:Entity) RETURN n
-MATCH (n:Entity) RETURN n.entityType as tipo, count(n) as total ORDER BY total DESC
-MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name LIMIT 50
-```
-
-## Flujo de actualización de arquitectura
-
-Cuando el equipo actualiza `ARQUITECTURA_REFERENCIA.md`:
-
-```bat
-:: 1. Asegurar Neo4j corriendo
-brain.bat up
-
-:: 2. Sincronizar sin borrar memoria acumulada
-brain.bat update
-:: (o directamente: brain-update.bat)
-
-:: ¿Qué preserva? → Decision, Fix, Pattern, Convention, Developer, Service, Bug
-:: ¿Qué actualiza? → Standard, Stack, Architecture, Kafka, Templates, DO/DONT
+# Scripts directos (avanzado)
+.\scripts\windows\brain.bat up/down/status/logs/browser
+.\scripts\windows\backup.bat backup/list/restore
 ```
 
 ---
@@ -224,11 +164,10 @@ brain.bat update
 
 | Problema | Causa | Solución |
 |----------|-------|----------|
-| `No se esperaba REQUIRE` en init-brain | Community Edition + escaping CMD | Usar `init-brain.bat` v4 (usa archivos JSON temporales) |
+| `No se esperaba REQUIRE` | Community Edition + escaping CMD | Usar `klap init` (usa archivos JSON temporales) |
 | `@jovanhsu/mcp-neo4j-memory-server` 404 | Paquete eliminado de npm | Usar `@knowall-ai/mcp-neo4j-agent-memory` |
 | MCP aparece como `local` scope | Se registró sin `--scope user` | `claude mcp remove "team-brain"` y re-registrar con `--scope user` |
 | Neo4j en loop de restart | Volúmenes corruptos en primer arranque | `docker compose down -v` y volver a levantar |
-| `Invalid value for password` | Password muy corta o igual a `neo4j` | Usar password de al menos 8 caracteres distinta a `neo4j` |
 
 ---
 
@@ -237,10 +176,8 @@ brain.bat update
 - **Equipo**: Liquidación SVBO — KLAP BYSF
 - **Stack**: Java 21, Spring Boot 3.5.11, Spring Cloud 2025.0.0, Gradle 9
 - **Arquitectura**: Microservicios event-driven con Kafka + PostgreSQL Aurora + AWS MSK
-- **Microservicios**: 14 servicios, 90% cumple el estándar documentado en `ARQUITECTURA_REFERENCIA.md`
-- **Documento base**: `ARQUITECTURA_REFERENCIA.md` v1.2.0 — fuente de verdad de los estándares
+- **Microservicios**: 14 servicios, 90% cumple el estándar documentado en la memoria compartida.
 
 ---
 
-*Team Brain KLAP BYSF · CONTEXT.md v1.1 · Actualizado el 2026-04-16*
-*Construido en conversación con Claude Sonnet 4.6 (Anthropic)*
+*Ecosistema Klap · CONTEXT.md v2.0 · Actualizado el 2026-04-21*
