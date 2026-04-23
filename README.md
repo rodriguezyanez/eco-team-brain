@@ -8,37 +8,30 @@ Para instalarlo de forma global en tu máquina (recomendado):
 
 ```bash
 # Desde la carpeta local donde descargaste el código
-npm install -g ./ecosistema-klap
+npm install -g .
 
-# O desde el repositorio Git (una vez publicado)
-npm install -g git+ssh://github.com/rodriguezyanez/eco-team-brain.git
+# O desde GitHub Packages (una vez publicado)
+npm install -g @rodriguezyanez/eco-team-brain
 ```
+
+> **Nota para GitHub Packages:** Asegúrate de tener configurado tu `.npmrc` con el token de acceso correspondiente para el scope `@rodriguezyanez`.
 
 ## Comandos del CLI `klap`
 
-### 1. Inicialización
-Configura el entorno inicial: base de datos Neo4j (constraints, índices, nodos base), instala hooks de git y habilidades locales.
-```bash
-klap init
-```
+### Operaciones Principales
+- `klap init`: Configura el entorno inicial (DB + Estándares + Skills).
+- `klap sync`: Sincroniza memorias locales pendientes con Neo4j.
+- `klap update`: Actualiza el Standard KLAP BYSF de forma incremental.
+- `klap rollback`: Revierte la instalación y restaura backups.
 
-### 2. Sincronización
-Sincroniza memorias locales pendientes (guardadas cuando Neo4j no estaba disponible) con la base de datos central.
-```bash
-klap sync
-```
+### Operaciones Avanzadas
+- `klap export [file]`: Exporta el grafo completo a un archivo JSON.
+- `klap import <file>`: Importa y mergea un JSON de otro dev.
+- `klap obsidian`: Exporta el grafo a Markdown para Obsidian.
+- `klap backup <cmd>`: Gestión de backups (`backup`, `list`, `restore`).
 
-### 3. Actualización de Arquitectura
-Actualiza los nodos del Standard KLAP BYSF en Neo4j de forma incremental, preservando la memoria acumulada por el equipo (Decisiones, Bugs, Patterns).
-```bash
-klap update
-```
-
-### 4. Rollback / Desinstalación
-Revierte los cambios en la configuración de Claude, detiene el contenedor Neo4j y restaura los backups.
-```bash
-klap rollback
-```
+### Gestión de Neo4j
+- `klap up`, `klap down`, `klap status`, `klap logs`, `klap browser`.
 
 ## Estructura del Paquete
 - `bin/`: Orquestadores CLI en Node.js (comandos `klap-*`).
@@ -50,7 +43,7 @@ klap rollback
 ## Actualización
 Para obtener la última versión del ecosistema:
 ```bash
-npm update -g ecosistema-klap
+npm update -g @rodriguezyanez/eco-team-brain
 ```
 
 ---
