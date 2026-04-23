@@ -1,6 +1,6 @@
 {
   "name": "@rodriguezyanez/eco-team-brain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ecosistema Klap — CLI de memoria compartida y estandarización para el equipo KLAP BYSF.",
   "main": "index.js",
   "bin": {
