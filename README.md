@@ -198,4 +198,4 @@ Para troubleshooting detallado ver [GUIA-PRACTICA.md](GUIA-PRACTICA.md#troublesh
 
 ---
 
-*Ecosistema Klap · v1.0.1 · 2026*
+*Ecosistema Klap · v1.0.2 · 2026*
