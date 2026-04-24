@@ -60,8 +60,13 @@ if (!command) {
     console.log('  obsidian  Exporta el grafo a formato Markdown para Obsidian');
     console.log('  backup    Gestión de backups de volúmenes Docker');
     console.log('  rollback  Revierte la instalación y restaura backups');
+    console.log('  config    Ver/cambiar la conexión Neo4j (host, usuario, password)');
     console.log('\nGestión de Neo4j:');
     console.log('  up, down, restart, status, logs, browser');
+    console.log('\nEjemplos config:');
+    console.log('  klap config show');
+    console.log('  klap config set -Host 10.0.0.50 -Password nueva-pass');
+    console.log('  klap config reset');
     process.exit(0);
 }
 
@@ -74,6 +79,7 @@ const commandMap = {
     'import': isWin ? 'scripts/windows/brain-import.ps1' : 'scripts/linux/brain-import.sh',
     'obsidian': isWin ? 'scripts/windows/export-obsidian.ps1' : 'scripts/linux/export-obsidian.sh',
     'backup': isWin ? 'scripts/windows/backup.ps1' : 'scripts/linux/backup.sh',
+    'config': isWin ? 'scripts/windows/config-neo4j.ps1' : 'scripts/linux/config-neo4j.sh',
     // Comandos de gestión delegan en brain.ps1/sh
     'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh', // Fallback
     'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
