@@ -37,6 +37,7 @@ npm install -g .
 | `klap sync` | Sincroniza memorias locales pendientes (`pending-memories.jsonl`) con Neo4j. |
 | `klap update` | Actualización incremental del Standard (sin borrar memoria acumulada). |
 | `klap rollback`| **Desinstalación**: Revierte cambios en Claude y detiene Neo4j. |
+| `klap config` | Ver o cambiar la conexión Neo4j post-instalación. |
 
 ### Operaciones Avanzadas
 | Comando | Descripción |
@@ -120,6 +121,25 @@ Para visualizar el grafo completo visualmente:
 3. Abre [Obsidian](https://obsidian.md/), selecciona **Abrir vault** y elige la carpeta `vault/`.
 4. Navega usando los `[[wikilinks]]` entre archivos Markdown.
 
+### Cambiar la conexión Neo4j
+
+La instalación inicial apunta a `localhost`. Para apuntar a un Neo4j compartido del equipo sin reinstalar:
+
+```bash
+# Ver qué conexión está activa
+klap config show
+
+# Apuntar a un Neo4j remoto (actualiza el MCP automáticamente)
+klap config set -Host 10.0.0.50 -Password pass-del-equipo
+
+# Volver a localhost
+klap config reset
+```
+
+La configuración se guarda en `%USERPROFILE%\.claude\team-brain.json` (por máquina, no versionada). Después de un `set` o `reset` hay que **reiniciar Claude Code** para que el MCP tome los nuevos valores.
+
+---
+
 ### Guardian Angel (Code Review)
 Instala el hook pre-commit en tu proyecto para que Claude valide tu código antes de cada commit:
 ```bash
@@ -135,8 +155,9 @@ Bypass urgente: `git commit --no-verify`.
 | Problema | Causa | Solución |
 |----------|-------|----------|
 | `klap` no se reconoce | No se instaló globalmente | Ejecuta `npm install -g .` en la raíz del paquete. |
-| `HTTP 401` en init | Password incorrecta | Revisa `NEO4J_PASSWORD` en `docker-compose.yml`. |
+| `HTTP 401` en init | Password incorrecta | Revisa `NEO4J_AUTH` en `docker-compose.yml`. |
 | MCP `disconnected` | Neo4j no está corriendo | Ejecuta `klap up`. |
+| MCP apunta al host incorrecto | Config desactualizada | Ejecuta `klap config show` y corrige con `klap config set`. |
 | `No se esperaba REQUIRE` | Error de escape en CMD | Usa `klap init` (usa PowerShell internamente). |
 | Neo4j en loop de restart | Volúmenes corruptos | `klap down`, borra volúmenes y `klap init` de nuevo. |
 

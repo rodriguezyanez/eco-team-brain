@@ -21,6 +21,8 @@ param(
     [string]$Action = ""
 )
 
+. "$PSScriptRoot\brain-config.ps1"
+
 if ($Action -eq "") {
     Write-Host ""
     Write-Host "Team Brain -- Comandos disponibles:" -ForegroundColor Cyan
@@ -86,14 +88,25 @@ switch ($Action) {
     }
 
     "mcp" {
+        $cfg = Get-BrainConfig
+        $mcpObj = @{
+            command = "npx"
+            args    = @("-y", "@knowall-ai/mcp-neo4j-agent-memory")
+            env     = @{
+                NEO4J_URI      = "bolt://$($cfg.host):$($cfg.boltPort)"
+                NEO4J_USERNAME = $cfg.user
+                NEO4J_PASSWORD = $cfg.password
+                NEO4J_DATABASE = $cfg.database
+            }
+        }
+        $mcpConfig = $mcpObj | ConvertTo-Json -Depth 5 -Compress
+
         Write-Host ""
         Write-Host "Registrando MCPs en Claude Code..." -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "IMPORTANTE: Reemplaza la password si la cambiaste en docker-compose.yml" -ForegroundColor Yellow
+        Write-Host "  Neo4j : bolt://$($cfg.host):$($cfg.boltPort)" -ForegroundColor Gray
         Write-Host ""
 
         Write-Host "Registrando team-brain..."
-        $mcpConfig = '{"command":"npx","args":["-y","@knowall-ai/mcp-neo4j-agent-memory"],"env":{"NEO4J_URI":"bolt://localhost:7687","NEO4J_USERNAME":"neo4j","NEO4J_PASSWORD":"team-brain-2025","NEO4J_DATABASE":"neo4j"}}'
         claude mcp add-json "team-brain" $mcpConfig --scope user
 
         Write-Host ""

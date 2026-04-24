@@ -9,6 +9,7 @@ REM   brain.bat status   -> ver estado del contenedor
 REM   brain.bat logs     -> ver logs en vivo
 REM   brain.bat browser  -> abrir Neo4j Browser en Chrome
 REM   brain.bat mcp      -> registrar MCP team-brain y Context7 en Claude Code
+REM   brain.bat config   -> ver/cambiar configuracion de conexion Neo4j
 REM   brain.bat update   -> sincronizacion incremental de Neo4j (preserva memoria)
 REM   brain.bat sync     -> sincronizar memorias pendientes locales con Neo4j
 REM   brain.bat export [archivo.json] -> exportar grafo completo a JSON
@@ -27,6 +28,7 @@ if /i "%ACTION%"=="status"  goto DO_STATUS
 if /i "%ACTION%"=="logs"    goto DO_LOGS
 if /i "%ACTION%"=="browser" goto DO_BROWSER
 if /i "%ACTION%"=="mcp"     goto DO_MCP
+if /i "%ACTION%"=="config"  goto DO_CONFIG
 if /i "%ACTION%"=="update"  goto DO_UPDATE
 if /i "%ACTION%"=="sync"    goto DO_SYNC
 if /i "%ACTION%"=="export"  goto DO_EXPORT
@@ -80,28 +82,12 @@ goto END
 
 :DO_MCP
 echo.
-echo Registrando MCPs en Claude Code...
-echo.
-echo IMPORTANTE: Reemplaza team-brain-2025 por tu password si la cambiaste.
-echo.
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0brain.ps1" -Action mcp
+goto END
 
-echo Registrando team-brain...
-claude mcp add-json "team-brain" "{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"neo4j\",\"NEO4J_PASSWORD\":\"team-brain-2025\",\"NEO4J_DATABASE\":\"neo4j\"}}" --scope user
-
+:DO_CONFIG
 echo.
-echo Registrando Context7 (documentacion en tiempo real)...
-claude mcp add-json "context7" "{\"command\":\"npx\",\"args\":[\"-y\",\"@upstash/context7-mcp\"]}" --scope user
-
-if %ERRORLEVEL% equ 0 (
-    echo.
-    echo [OK] MCPs registrados. Verificando...
-    claude mcp list
-) else (
-    echo.
-    echo [ERROR] Fallo el registro de algun MCP.
-    echo         Asegurate de tener Claude Code instalado:
-    echo         npm install -g @anthropic-ai/claude-code
-)
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0config-neo4j.ps1" %2 %3 %4 %5 %6 %7 %8 %9
 goto END
 
 :DO_UPDATE
@@ -157,6 +143,7 @@ echo   brain.bat status              Ver estado del contenedor
 echo   brain.bat logs                Ver logs en vivo
 echo   brain.bat browser             Abrir Neo4j Browser
 echo   brain.bat mcp                 Registrar MCPs ^(team-brain + Context7^) en Claude Code
+echo   brain.bat config [show^|set^|reset]  Ver/cambiar conexion Neo4j
 echo   brain.bat update              Sincronizar arquitectura en Neo4j ^(preserva memoria^)
 echo   brain.bat sync                Sincronizar memorias pendientes locales con Neo4j
 echo   brain.bat export [file.json]  Exportar grafo completo a JSON

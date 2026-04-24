@@ -77,6 +77,7 @@ Una vez instalado, el comando `klap` queda disponible globalmente en tu terminal
 | `klap sync` | Sincroniza memorias locales pendientes (`pending-memories.jsonl`) con Neo4j |
 | `klap update` | Actualización incremental del Standard KLAP BYSF sin borrar memoria acumulada |
 | `klap rollback` | Desinstalación: revierte cambios en Claude Code y detiene Neo4j |
+| `klap config` | Ver o cambiar la conexión Neo4j (host, usuario, password) |
 
 ### Operaciones avanzadas
 
@@ -188,9 +189,10 @@ npm update -g @rodriguezyanez/eco-team-brain
 | Problema | Solución |
 |----------|----------|
 | `klap` no se reconoce | Ejecuta `npm install -g .` en la raíz del paquete |
-| `HTTP 401` en init | Revisa `NEO4J_PASSWORD` en `docker-compose.yml` |
+| `HTTP 401` en init | Revisa `NEO4J_AUTH` en `docker-compose.yml` o ejecuta `klap config show` |
 | MCP `disconnected` | Ejecuta `klap up` y espera ~20 segundos |
 | Neo4j en loop de restart | `klap down`, borra volúmenes y ejecuta `klap init` de nuevo |
+| MCP apunta a host incorrecto | Ejecuta `klap config show` y corrige con `klap config set` |
 
 Para troubleshooting detallado ver [GUIA-PRACTICA.md](GUIA-PRACTICA.md#troubleshooting-solución-de-problemas).
 
