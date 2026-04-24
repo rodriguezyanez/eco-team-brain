@@ -13,11 +13,19 @@
 # =============================================================
 
 param(
-    [string]$Neo4jUri    = "http://localhost:7474",
-    [string]$Neo4jUser   = "neo4j",
-    [string]$Neo4jPass   = "team-brain-2025",
-    [string]$Neo4jDb     = "neo4j"
+    [string]$Neo4jUri  = "",
+    [string]$Neo4jUser = "",
+    [string]$Neo4jPass = "",
+    [string]$Neo4jDb   = ""
 )
+
+. "$PSScriptRoot\brain-config.ps1"
+$_cfg = Get-BrainConfig
+
+if ($Neo4jUri  -eq "") { $Neo4jUri  = "http://$($_cfg.host):$($_cfg.httpPort)" }
+if ($Neo4jUser -eq "") { $Neo4jUser = $_cfg.user }
+if ($Neo4jPass -eq "") { $Neo4jPass = $_cfg.password }
+if ($Neo4jDb   -eq "") { $Neo4jDb   = $_cfg.database }
 
 $QueueFile = Join-Path $env:USERPROFILE ".claude\pending-memories.jsonl"
 $TxEndpoint = "$Neo4jUri/db/$Neo4jDb/tx/commit"
