@@ -1,7 +1,7 @@
 {
-  "name": "ecosistema-klap",
-  "version": "1.0.0",
-  "description": "Ecosistema Klap - Herramientas para estandarización de desarrollo y memoria compartida.",
+  "name": "@rodriguezyanez/eco-team-brain",
+  "version": "1.0.1",
+  "description": "Ecosistema Klap — CLI de memoria compartida y estandarización para el equipo KLAP BYSF.",
   "main": "index.js",
   "bin": {
     "klap": "./bin/klap.js",
@@ -14,12 +14,21 @@
   },
   "keywords": [
     "klap",
-    "brain",
-    "ecosystem",
-    "cli"
+    "team-brain",
+    "neo4j",
+    "claude",
+    "mcp",
+    "cli",
+    "devtools"
   ],
-  "author": "",
+  "author": "Equipo KLAP BYSF",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
     "shelljs": "^0.8.5"
   }

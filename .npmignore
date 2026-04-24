@@ -1,0 +1,26 @@
+# Control de versiones
+.git/
+.gitignore
+
+# Dependencias
+node_modules/
+package-lock.json
+
+# Archivos de desarrollo / documentación interna
+CONTEXT.md
+GUIA-PRACTICA.md
+ONBOARDING.md
+
+# Exports temporales de Neo4j
+teambrain-export-*.json
+brain-export-*.json
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.temp
+*.bak
+*.backup
+~$*
