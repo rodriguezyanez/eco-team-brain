@@ -80,13 +80,13 @@ const commandMap = {
     'obsidian': isWin ? 'scripts/windows/export-obsidian.ps1' : 'scripts/linux/export-obsidian.sh',
     'backup': isWin ? 'scripts/windows/backup.ps1' : 'scripts/linux/backup.sh',
     'config': isWin ? 'scripts/windows/config-neo4j.ps1' : 'scripts/linux/config-neo4j.sh',
-    // Comandos de gestión delegan en brain.ps1/sh
-    'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh', // Fallback
-    'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'restart': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'status': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'logs': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh'
+    // Comandos de gestión delegan en brain.ps1/brain.sh
+    'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'restart': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'status': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'logs': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh'
 };
 
 // Mapeo especial para comandos que van dentro de brain.ps1
