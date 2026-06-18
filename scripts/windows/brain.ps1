@@ -99,22 +99,32 @@ switch ($Action) {
                 NEO4J_DATABASE = $cfg.database
             }
         }
-        $mcpConfig = $mcpObj | ConvertTo-Json -Depth 5 -Compress
+        # Windows PowerShell (5.1) rompe las comillas dobles internas al pasar
+        # el JSON a un .exe nativo. Se escapan (" -> \") para que 'claude' reciba
+        # un JSON valido. Sin esto: "Invalid configuration: Invalid input".
+        $mcpConfig = ($mcpObj | ConvertTo-Json -Depth 5 -Compress) -replace '"', '\"'
 
         Write-Host ""
         Write-Host "Registrando MCPs en Claude Code..." -ForegroundColor Cyan
         Write-Host "  Neo4j : bolt://$($cfg.host):$($cfg.boltPort)" -ForegroundColor Gray
         Write-Host ""
 
+        # 'add-json' no es idempotente: falla si el server ya existe.
+        # Se elimina primero (ignorando el error si no existe) y luego se agrega,
+        # de modo que 'klap mcp' siempre deja la config actualizada.
         Write-Host "Registrando team-brain..."
+        claude mcp remove "team-brain" --scope user 2>$null | Out-Null
         claude mcp add-json "team-brain" $mcpConfig --scope user
+        $okTeamBrain = ($LASTEXITCODE -eq 0)
 
         Write-Host ""
         Write-Host "Registrando Context7 (documentacion en tiempo real)..."
-        $context7Config = '{"command":"npx","args":["-y","@upstash/context7-mcp"]}'
+        $context7Config = '{"command":"npx","args":["-y","@upstash/context7-mcp"]}' -replace '"', '\"'
+        claude mcp remove "context7" --scope user 2>$null | Out-Null
         claude mcp add-json "context7" $context7Config --scope user
+        $okContext7 = ($LASTEXITCODE -eq 0)
 
-        if ($LASTEXITCODE -eq 0) {
+        if ($okTeamBrain -and $okContext7) {
             Write-Host ""
             Write-Host "[OK] MCPs registrados. Verificando..." -ForegroundColor Green
             claude mcp list
