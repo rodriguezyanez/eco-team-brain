@@ -48,6 +48,15 @@ Síntoma: `brain.bat mcp` → `Invalid configuration: : Invalid input`.
 Verificado: `brain.ps1 mcp` → "Added ... team-brain", "Added ... context7", `[OK]`, ambos ✔ Connected.
 Nota: el error `SessionEnd hook ... ENOENT ...Programs\Git` al final es de un hook del entorno del dev (`.pixel-agents`), ajeno a klap.
 
+## Fase 4 — `klap mcp` + footgun de cmd.exe en fresh clone (2026-06-19)
+
+| # | Actividad | Estado |
+|---|-----------|--------|
+| 4.1 | `bin/klap.js`: agregar `mcp` a `commandMap` y `brainCommands` (+ help) → `klap mcp` | ✅ Completado |
+| 4.2 | `init-brain.ps1`: el comando "manual" se imprimía con comillas simples (solo válido en PowerShell) → rompía en cmd.exe ("Invalid input"). Ahora prioriza `klap mcp`/`brain.bat mcp` y el manual va en forma cmd-segura (comillas dobles escapadas, `--scope user`) | ✅ Completado |
+
+Raíz del reporte de diego.benavides: estaba en `develop` (sin el fix) y pegó en **cmd.exe** el comando manual de `init-brain.ps1` (comillas simples). Verificado: la forma `"{\"...\"}"` funciona en cmd.exe (EXITCODE=0).
+
 ### Verificación Fase 2
 - ✅ `bash -n` OK en los 4 scripts (`brain-config.sh`, `config-neo4j.sh`, `brain.sh`, `brain-sync.sh`).
 - ✅ `brain.sh status` → corre `docker compose ps` (EXIT 0). **Bug de enrutamiento resuelto.**

@@ -63,6 +63,7 @@ if (!command) {
     console.log('  config    Ver/cambiar la conexión Neo4j (host, usuario, password)');
     console.log('\nGestión de Neo4j:');
     console.log('  up, down, restart, status, logs, browser');
+    console.log('  mcp       Registra los MCP (team-brain + Context7) en Claude Code');
     console.log('\nEjemplos config:');
     console.log('  klap config show');
     console.log('  klap config set -Host 10.0.0.50 -Password nueva-pass');
@@ -86,11 +87,12 @@ const commandMap = {
     'restart': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
     'status': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
     'logs': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
-    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh'
+    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'mcp': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh'
 };
 
-// Mapeo especial para comandos que van dentro de brain.ps1
-const brainCommands = ['up', 'down', 'restart', 'status', 'logs', 'browser'];
+// Mapeo especial para comandos que van dentro de brain.ps1/brain.sh
+const brainCommands = ['up', 'down', 'restart', 'status', 'logs', 'browser', 'mcp'];
 
 const scriptPath = commandMap[command];
 

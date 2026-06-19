@@ -109,8 +109,13 @@ Write-Host "=====================================================" -ForegroundCo
 Write-Host ""
 Write-Host "Proximo paso — ejecuta en tu terminal:"
 Write-Host ""
-Write-Host "  brain.bat mcp"
+Write-Host "  klap mcp        (o:  .\scripts\windows\brain.bat mcp )"
 Write-Host ""
-Write-Host "  (o manualmente):"
-Write-Host "  claude mcp add-json ""team-brain"" '{""command"":""npx"",""args"":[""-y"",""@knowall-ai/mcp-neo4j-agent-memory""],""env"":{""NEO4J_URI"":""bolt://localhost:7687"",""NEO4J_USERNAME"":""neo4j"",""NEO4J_PASSWORD"":""$Password"",""NEO4J_DATABASE"":""$useDb""}}'"
+Write-Host "  Registra team-brain y Context7 en Claude Code con el escaping"
+Write-Host "  correcto. NO pegues el JSON a mano: las comillas simples se"
+Write-Host "  rompen en cmd.exe ('Invalid configuration: Invalid input')."
+Write-Host ""
+Write-Host "  Si aun asi lo necesitas manual en CMD (comillas dobles escapadas):"
+$manualJson = '{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"neo4j\",\"NEO4J_PASSWORD\":\"' + $Password + '\",\"NEO4J_DATABASE\":\"' + $useDb + '\"}}'
+Write-Host ('  claude mcp add-json "team-brain" "' + $manualJson + '" --scope user')
 Write-Host ""
