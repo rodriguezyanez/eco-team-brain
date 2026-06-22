@@ -8,10 +8,17 @@
 # Requiere: curl, jq
 # =============================================================
 
-NEO4J_URI="${NEO4J_URI:-http://localhost:7474}"
-NEO4J_USER="${NEO4J_USER:-neo4j}"
-NEO4J_PASS="${NEO4J_PASS:-team-brain-2025}"
-NEO4J_DB="${NEO4J_DB:-neo4j}"
+# Carga la config compartida (~/.claude/brain-config.json) como defaults.
+# Las env vars NEO4J_* tienen precedencia si estan definidas.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=/dev/null
+. "${SCRIPT_DIR}/brain-config.sh"
+load_brain_config
+
+NEO4J_URI="${NEO4J_URI:-http://${BRAIN_HOST}:${BRAIN_HTTP_PORT}}"
+NEO4J_USER="${NEO4J_USER:-${BRAIN_USER}}"
+NEO4J_PASS="${NEO4J_PASS:-${BRAIN_PASSWORD}}"
+NEO4J_DB="${NEO4J_DB:-${BRAIN_DATABASE}}"
 QUEUE_FILE="${HOME}/.claude/pending-memories.jsonl"
 TX_ENDPOINT="${NEO4J_URI}/db/${NEO4J_DB}/tx/commit"
 AUTH_HEADER="Authorization: Basic $(echo -n "${NEO4J_USER}:${NEO4J_PASS}" | base64)"

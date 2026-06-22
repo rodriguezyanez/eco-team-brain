@@ -94,9 +94,11 @@ Una vez instalado, el comando `klap` queda disponible globalmente en tu terminal
 |---------|---------|
 | `klap up` | Levanta el contenedor Neo4j |
 | `klap down` | Detiene el contenedor (los datos persisten) |
+| `klap restart` | Reinicia el contenedor Neo4j |
 | `klap status` | Muestra el estado del contenedor |
 | `klap logs` | Muestra logs en vivo de Neo4j |
 | `klap browser` | Abre Neo4j Browser en `http://localhost:7474` |
+| `klap mcp` | Registra los MCP (`team-brain` + Context7) en Claude Code |
 
 ---
 

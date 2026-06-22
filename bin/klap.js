@@ -63,6 +63,7 @@ if (!command) {
     console.log('  config    Ver/cambiar la conexión Neo4j (host, usuario, password)');
     console.log('\nGestión de Neo4j:');
     console.log('  up, down, restart, status, logs, browser');
+    console.log('  mcp       Registra los MCP (team-brain + Context7) en Claude Code');
     console.log('\nEjemplos config:');
     console.log('  klap config show');
     console.log('  klap config set -Host 10.0.0.50 -Password nueva-pass');
@@ -80,17 +81,18 @@ const commandMap = {
     'obsidian': isWin ? 'scripts/windows/export-obsidian.ps1' : 'scripts/linux/export-obsidian.sh',
     'backup': isWin ? 'scripts/windows/backup.ps1' : 'scripts/linux/backup.sh',
     'config': isWin ? 'scripts/windows/config-neo4j.ps1' : 'scripts/linux/config-neo4j.sh',
-    // Comandos de gestión delegan en brain.ps1/sh
-    'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh', // Fallback
-    'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'restart': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'status': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'logs': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh',
-    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain-sync.sh'
+    // Comandos de gestión delegan en brain.ps1/brain.sh
+    'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'restart': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'status': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'logs': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'browser': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
+    'mcp': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh'
 };
 
-// Mapeo especial para comandos que van dentro de brain.ps1
-const brainCommands = ['up', 'down', 'restart', 'status', 'logs', 'browser'];
+// Mapeo especial para comandos que van dentro de brain.ps1/brain.sh
+const brainCommands = ['up', 'down', 'restart', 'status', 'logs', 'browser', 'mcp'];
 
 const scriptPath = commandMap[command];
 

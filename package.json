@@ -4,10 +4,10 @@
   "description": "Ecosistema Klap — CLI de memoria compartida y estandarización para el equipo KLAP BYSF.",
   "main": "index.js",
   "bin": {
-    "klap": "./bin/klap.js",
-    "klap-sync": "./bin/klap-sync.js",
-    "klap-init": "./bin/klap-init.js",
-    "klap-rollback": "./bin/klap-rollback.js"
+    "klap": "bin/klap.js",
+    "klap-sync": "bin/klap-sync.js",
+    "klap-init": "bin/klap-init.js",
+    "klap-rollback": "bin/klap-rollback.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

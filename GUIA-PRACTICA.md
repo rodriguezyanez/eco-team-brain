@@ -89,10 +89,14 @@ klap init
 
 ### PASO 3 — Registrar MCPs en Claude Code
 ```bash
-# Windows
-.\scripts\windows\brain.bat mcp
+klap mcp
+# Alternativa equivalente en Windows: .\scripts\windows\brain.bat mcp
 ```
-*(Próximamente disponible vía `klap mcp`)*. Verifica con `claude mcp list` que aparezcan `team-brain` y `context7` conectados.
+Verifica con `claude mcp list` que aparezcan `team-brain` y `context7` conectados.
+
+> No pegues el JSON de `claude mcp add-json` a mano en **cmd.exe**: las comillas
+> simples no delimitan en CMD y obtendrás `Invalid configuration: Invalid input`.
+> Usa siempre `klap mcp`, que aplica el escaping correcto.
 
 ### PASO 4 — Instalar Skills y CLAUDE.md
 Copia manualmente el sistema prompt y las habilidades locales (fallback):
@@ -129,14 +133,14 @@ La instalación inicial apunta a `localhost`. Para apuntar a un Neo4j compartido
 # Ver qué conexión está activa
 klap config show
 
-# Apuntar a un Neo4j remoto (actualiza el MCP automáticamente)
+# Apuntar a un Neo4j remoto
 klap config set -Host 10.0.0.50 -Password pass-del-equipo
 
 # Volver a localhost
 klap config reset
 ```
 
-La configuración se guarda en `%USERPROFILE%\.claude\team-brain.json` (por máquina, no versionada). Después de un `set` o `reset` hay que **reiniciar Claude Code** para que el MCP tome los nuevos valores.
+La configuración se guarda en `%USERPROFILE%\.claude\brain-config.json` (por máquina, no versionada). Después de un `set` o `reset` vuelve a registrar el MCP con la nueva conexión ejecutando `klap mcp`, y luego **reinicia Claude Code** para que tome los nuevos valores.
 
 ---
 
