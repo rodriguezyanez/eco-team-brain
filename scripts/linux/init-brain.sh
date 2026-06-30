@@ -123,6 +123,15 @@ echo "   Base de datos:  ${USE_DB}"
 echo "   Bolt URI:       bolt://${NEO4J_HOST}:7687"
 echo "═══════════════════════════════════════════════"
 echo ""
+# ── Instalar commands y workflows en ~/.claude ───────────────
+echo "Instalando commands y workflows en Claude Code..."
+INSTALL_SCRIPT="$(dirname "$0")/install-commands.sh"
+if [ -f "$INSTALL_SCRIPT" ]; then
+    bash "$INSTALL_SCRIPT"
+else
+    echo "[WARN] install-commands.sh no encontrado, omitiendo."
+fi
+
 echo "Próximo paso: registra el MCP en Claude Code:"
 echo ""
 echo "  claude mcp add-json \"team-brain\" '{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"${NEO4J_USER}\",\"NEO4J_PASSWORD\":\"${NEO4J_PASS}\",\"NEO4J_DATABASE\":\"${USE_DB}\"}}'"
