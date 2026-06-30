@@ -107,6 +107,15 @@ Write-Host "  Base de datos : $useDb"
 Write-Host "  Bolt URI      : bolt://${Neo4jHost}:7687"
 Write-Host "=====================================================" -ForegroundColor Green
 Write-Host ""
+# ── Instalar commands y workflows en ~/.claude ───────────────
+Write-Host "Instalando commands y workflows en Claude Code..."
+$installScript = Join-Path $PSScriptRoot "install-commands.ps1"
+if (Test-Path $installScript) {
+    & $installScript
+} else {
+    Write-Host "[WARN] install-commands.ps1 no encontrado, omitiendo." -ForegroundColor Yellow
+}
+
 Write-Host "Proximo paso — ejecuta en tu terminal:"
 Write-Host ""
 Write-Host "  klap mcp        (o:  .\scripts\windows\brain.bat mcp )"

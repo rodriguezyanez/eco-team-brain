@@ -52,7 +52,8 @@ if (!command) {
     console.log('Ecosistema Klap - CLI');
     console.log('Uso: klap <comando> [argumentos]');
     console.log('\nComandos disponibles:');
-    console.log('  init      Inicializa el entorno completo (DB + Estándares + Skills)');
+    console.log('  init      Inicializa el entorno completo (DB + Estándares + Skills + Commands)');
+    console.log('  install   Instala commands y workflows en ~/.claude (sin reinicializar DB)');
     console.log('  sync      Sincroniza memorias locales pendientes con Neo4j');
     console.log('  update    Actualiza el Standard KLAP BYSF (incremental)');
     console.log('  export    Exporta el grafo de Neo4j a un archivo JSON');
@@ -73,6 +74,7 @@ if (!command) {
 
 const commandMap = {
     'init': isWin ? 'scripts/windows/init-brain.ps1' : 'scripts/linux/init-brain.sh',
+    'install': isWin ? 'scripts/windows/install-commands.ps1' : 'scripts/linux/install-commands.sh',
     'sync': isWin ? 'scripts/windows/brain-sync.ps1' : 'scripts/linux/brain-sync.sh',
     'update': isWin ? 'scripts/windows/brain-update.ps1' : 'scripts/linux/brain-update.sh',
     'rollback': isWin ? 'scripts/windows/rollback.ps1' : 'scripts/linux/rollback.sh',
