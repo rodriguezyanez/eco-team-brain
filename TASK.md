@@ -1,81 +1,65 @@
-# TASK — Fix incidencias PowerShell del CLI `klap`
+# TASK — Skill `/audit-cert`: auditoría de proyectos pre-certificación
 
-Rama: `feature/20260618_rvs_fix_incidencias_powershell`
-Última actualización: 2026-06-18
+Rama: `feature/dev/20260701_skill_auditoria_proyectos`
+Última actualización: 2026-07-01
 
 ## Contexto
-El commit `44f4035` agregó referencias a `brain-config.ps1` y `config-neo4j.ps1` en `klap.js`, `brain.ps1`, `brain-sync.ps1` y `brain.bat`, pero nunca creó esos archivos. Esto rompe `klap config` (total), `klap sync`/`klap mcp` (dependen de `Get-BrainConfig`) y ensucia `status/logs/up/down/restart/browser` con un error visible de dot-source.
+El equipo necesita auditar entregables **antes de que pasen a certificación**, con el objetivo concreto de que
+**pasen los quality gates del pipeline Jenkins** (SonarQube, OWASP Dependency-Check, Trivy) además del estándar
+KLAP BYSF. Los entregables son **multi-stack**: microservicios Spring Boot, AWS Lambda (SAM/Serverless/CDK,
+Java o Node), APIs REST y sitios Angular.
 
-## Evidencia (pruebas no-mutantes ejecutadas)
-- `klap` → ✅ ayuda OK (exit 0)
-- `klap comando-invalido` → ✅ "Comando desconocido" (exit 1, esperado)
-- `klap config show` → ❌ `-File '...config-neo4j.ps1' no existe`
-- `klap status` → ⚠️ error `. brain-config.ps1` pero igual corre `docker compose ps`
+No existía un comando que emitiera un veredicto único **APTO / NO APTO para certificación** alineado a esos gates.
+Sí existían piezas reutilizables (`code-review-expert`, `kafka-audit`, `defectos-tipicos-checklist`, `sdd-checklist`,
+Security Gate SDD fase 4.5) pero Java/Kafka-céntricas y sin cubrir el quality gate de Sonar, CVEs de dependencias
+(OWASP DC) ni Trivy.
+
+## Decisiones de diseño (confirmadas con el dev)
+- **Vehículo:** skill / slash-command `/audit-cert` (solo lectura), NO subcomando `klap` — el CLI solo despacha
+  scripts shell y no puede juzgar código.
+- **Composición:** orquestador que reutiliza las skills existentes + agrega dimensiones de CI gates.
+- **Ejecución:** híbrida — corre Trivy y OWASP Dependency-Check si están instalados; para Sonar replica
+  analíticamente las métricas del quality gate (sin server); predice verde/rojo. Escáner ausente → se reporta
+  "no ejecutado localmente", nunca se silencia.
+- **Umbrales:** autodetección desde el propio repo (Jenkinsfile, `sonar-project.properties`, config de
+  dependency-check/trivy) con fallback al estándar KLAP.
+- **Stacks v1:** los cuatro (Spring Boot, AWS Lambda, API REST, Angular).
 
 ## Actividades
 
 | # | Actividad | Estado |
 |---|-----------|--------|
-| 1 | Diagnóstico y captura de errores (pruebas no-mutantes) | ✅ Completado |
-| 2 | Crear `scripts/windows/brain-config.ps1` (`Get/Set/Reset-BrainConfig`, persistencia en `~/.claude/brain-config.json`, defaults del compose) | ✅ Completado |
-| 3 | Crear `scripts/windows/config-neo4j.ps1` (`show` / `set` / `reset`) | ✅ Completado |
-| 4 | Quitar `version: "3.9"` obsoleto de `docker-compose.yml` (warning Compose) | ✅ Completado |
-| 5 | Verificar: `config show/set/reset`, `status` limpio, re-test tabla de evidencia | ✅ Completado |
-| 6 | Paridad Linux completa (ver Fase 2) | ✅ Completado |
+| 1 | Explorar CLI `klap`, flujo SDD y piezas de auditoría existentes | ✅ Completado |
+| 2 | Crear `skills/audit-cert.md` (detección de stack, gates Jenkins, umbrales, estándar KLAP por stack, veredicto, informe) | ✅ Completado |
+| 3 | Registrar `audit-cert.md` en `scripts/windows/install-skills.ps1` (`$Files` + `$Expected=13`) | ✅ Completado |
+| 4 | Registrar en `scripts/windows/install-skills.bat` (`DO_COPY` + `EXPECTED=13`) | ✅ Completado |
+| 5 | Registrar en `scripts/linux/install-skills.sh` (`FILES` + `EXPECTED=13`) | ✅ Completado |
+| 6 | Agregar a la limpieza de `rollback.ps1` y `rollback.sh` | ✅ Completado |
+| 7 | Índice en `skills/skill-registry.md` | ✅ Completado |
+| 8 | Docs: `README.md` y `GUIA-PRACTICA.md` | ✅ Completado |
+| 9 | `git add -f skills/audit-cert.md` (`.gitignore` ignora `*.md`) | ✅ Completado |
 
-## Fase 2 — Registro de bug + Paridad Linux (2026-06-18)
+## Diseño del skill (resumen)
+`skills/audit-cert.md` — frontmatter estilo `kafka-audit` (`disable-model-invocation: true`). Pasos:
+1. **Detección de stack** por marcadores (`build.gradle`/`@SpringBootApplication`, `template.yaml`/`serverless.yml`/
+   `cdk.json`, controllers REST, `angular.json`).
+2. **Autodetección de umbrales** (repo → fallback KLAP: cobertura ≥95%, quality gate PASSED, 0 CVE CVSS≥7,
+   0 Trivy CRITICAL/HIGH, duplicaciones ≤3%).
+3. **Gates Jenkins** (todos los stacks): Sonar quality gate analítico, OWASP Dependency-Check, Trivy (fs/image/config).
+4. **Estándar KLAP por stack** reutilizando `code-review-expert`, `sdd-checklist`, `defectos-tipicos-checklist`,
+   `kafka-audit` (solo si usa Kafka); reglas específicas para Lambda / API / Angular.
+5. **Veredicto** APTO / APTO CON OBSERVACIONES / NO APTO.
+6. **Informe** `audit-cert-{proyecto}-{fecha}.md` (tabla por gate + matriz de hallazgos + bloqueantes). Solo lectura.
 
-| # | Actividad | Estado |
-|---|-----------|--------|
-| 2.0 | Registrar bug en Neo4j (label `bug`, `_id: 26`) | ✅ Completado |
-| 2.1 | Crear `scripts/linux/brain-config.sh` (`load_brain_config`, `brain_config_path`) | ✅ Completado |
-| 2.2 | Crear `scripts/linux/config-neo4j.sh` (`show/set/reset`, flags `-Host` etc, jq) | ✅ Completado |
-| 2.3 | Crear `scripts/linux/brain.sh` (`up/down/restart/status/logs/browser/mcp/update/sync`) | ✅ Completado |
-| 2.4 | Fix `bin/klap.js`: enrutar gestión Linux a `brain.sh` (no `brain-sync.sh`) | ✅ Completado |
-| 2.5 | `scripts/linux/brain-sync.sh` usa config compartida (env override preservado) | ✅ Completado |
-| 2.6 | (Fuera de alcance) Retrofit resto de scripts Linux a `brain-config.json` | ⬜ Pendiente |
+## Verificación
+- ✅ `bash -n` OK en `install-skills.sh` y `rollback.sh`; parseo OK de `install-skills.ps1` y `rollback.ps1`.
+- ✅ Conteo consistente: 13 entradas de skills en los 3 instaladores (`.ps1`/`.bat`/`.sh`), contadores en 13.
+- ✅ `skills/audit-cert.md` presente (9 KB) y trackeado (force-add por `.gitignore *.md`).
+- ✅ `audit-cert.md` agregado a ambas listas de `rollback` para limpieza completa.
 
-## Fase 3 — Fix `klap mcp` (reportado al probar) (2026-06-18)
-
-Síntoma: `brain.bat mcp` → `Invalid configuration: : Invalid input`.
-
-| # | Actividad | Estado |
-|---|-----------|--------|
-| 3.1 | `brain.ps1` mcp: escapar comillas dobles del JSON (`-replace '"','\"'`) — PowerShell 5.1 rompe el JSON al pasarlo a `claude.exe` | ✅ Completado |
-| 3.2 | `brain.ps1` mcp: hacer idempotente (`mcp remove` antes de `add-json`) + detección de éxito por server | ✅ Completado |
-| 3.3 | Espejo en `brain.sh` (Linux): idempotencia remove-then-add | ✅ Completado |
-
-Verificado: `brain.ps1 mcp` → "Added ... team-brain", "Added ... context7", `[OK]`, ambos ✔ Connected.
-Nota: el error `SessionEnd hook ... ENOENT ...Programs\Git` al final es de un hook del entorno del dev (`.pixel-agents`), ajeno a klap.
-
-## Fase 4 — `klap mcp` + footgun de cmd.exe en fresh clone (2026-06-19)
-
-| # | Actividad | Estado |
-|---|-----------|--------|
-| 4.1 | `bin/klap.js`: agregar `mcp` a `commandMap` y `brainCommands` (+ help) → `klap mcp` | ✅ Completado |
-| 4.2 | `init-brain.ps1`: el comando "manual" se imprimía con comillas simples (solo válido en PowerShell) → rompía en cmd.exe ("Invalid input"). Ahora prioriza `klap mcp`/`brain.bat mcp` y el manual va en forma cmd-segura (comillas dobles escapadas, `--scope user`) | ✅ Completado |
-
-Raíz del reporte de diego.benavides: estaba en `develop` (sin el fix) y pegó en **cmd.exe** el comando manual de `init-brain.ps1` (comillas simples). Verificado: la forma `"{\"...\"}"` funciona en cmd.exe (EXITCODE=0).
-
-### Verificación Fase 2
-- ✅ `bash -n` OK en los 4 scripts (`brain-config.sh`, `config-neo4j.sh`, `brain.sh`, `brain-sync.sh`).
-- ✅ `brain.sh status` → corre `docker compose ps` (EXIT 0). **Bug de enrutamiento resuelto.**
-- ✅ `config-neo4j.sh show` sin `jq` → guard dispara con EXIT 1 (comportamiento esperado).
-- ⏳ Happy-path `config set/show/reset` NO ejecutado en este host: `jq` no instalado en Git Bash (dependencia preexistente de los scripts Linux). Pendiente de correr en un entorno Linux/macOS con `jq`. Lógica es espejo de la versión Windows ya verificada.
-- ℹ️ Nota de entorno: el `bash` del PATH es el relay de WSL (sin distro); usar el bash de Git for Windows en `%LOCALAPPDATA%\Programs\Git\bin\bash.exe`.
-
-## Resultado de verificación (2026-06-18)
-- `klap config show` → ✅ exit 0, password enmascarada.
-- `klap config set -Host localhost -Password team-brain-2025 -BoltPort 7687` → ✅ persiste `~/.claude/brain-config.json`.
-- `klap config reset` → ✅ vuelve a defaults.
-- `klap status` → ✅ limpio, sin error de `brain-config.ps1` ni warning de `version` en Compose.
-
-## Contrato `Get-BrainConfig` (consumidores: brain.ps1:24,91 · brain-sync.ps1:22-23,25)
-Devuelve objeto con: `host`, `httpPort` (7474), `boltPort` (7687), `user` (neo4j), `password` (team-brain-2025), `database` (neo4j).
-Defaults tomados de `docker-compose.yml` (`NEO4J_AUTH: neo4j/team-brain-2025`).
-
-## Verificación final
-1. `node bin/klap.js config show` → imprime config, exit 0, password enmascarada.
-2. `node bin/klap.js config set -Host localhost -Password team-brain-2025` → persiste JSON.
-3. `node bin/klap.js config reset` → defaults.
-4. `node bin/klap.js status` → sin error de `brain-config.ps1`.
+## Pendiente / fuera de alcance
+- ⚠️ **Bug preexistente del instalador** (no introducido por esta tarea): `install-skills.ps1` resuelve el origen
+  como `$PSScriptRoot\skills` (`scripts/windows/skills`) y el `.bat` como `%~dp0..\skills` (`scripts/skills`), pero
+  las skills viven en `skills/` en la raíz. Impide correr la instalación end-to-end desde el repo. Candidato a fix
+  aparte (apuntar el origen a la raíz: `Join-Path $PSScriptRoot "..\..\skills"` / `${SCRIPT_DIR}/../../skills`).
+- ⏳ Prueba funcional real de `/audit-cert` sobre un repo de cada stack (queda para uso en el día a día).
