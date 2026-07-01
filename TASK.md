@@ -38,6 +38,7 @@ Security Gate SDD fase 4.5) pero Java/Kafka-céntricas y sin cubrir el quality g
 | 7 | Índice en `skills/skill-registry.md` | ✅ Completado |
 | 8 | Docs: `README.md` y `GUIA-PRACTICA.md` | ✅ Completado |
 | 9 | `git add -f skills/audit-cert.md` (`.gitignore` ignora `*.md`) | ✅ Completado |
+| 10 | Fix del origen en `install-skills.ps1/.bat/.sh`: apuntar a la raíz (`..\..\skills`) en vez de la carpeta del script | ✅ Completado |
 
 ## Diseño del skill (resumen)
 `skills/audit-cert.md` — frontmatter estilo `kafka-audit` (`disable-model-invocation: true`). Pasos:
@@ -56,10 +57,10 @@ Security Gate SDD fase 4.5) pero Java/Kafka-céntricas y sin cubrir el quality g
 - ✅ Conteo consistente: 13 entradas de skills en los 3 instaladores (`.ps1`/`.bat`/`.sh`), contadores en 13.
 - ✅ `skills/audit-cert.md` presente (9 KB) y trackeado (force-add por `.gitignore *.md`).
 - ✅ `audit-cert.md` agregado a ambas listas de `rollback` para limpieza completa.
+- ✅ **Fix del instalador (preexistente, resuelto en esta rama):** el origen se resolvía a la carpeta del script
+  (`$PSScriptRoot\skills`, `%~dp0..\skills`, `${SCRIPT_DIR}/skills`) en vez de a `skills/` en la raíz. Corregido a
+  `..\..\skills` / `${SCRIPT_DIR}/../../skills`. Los 3 instaladores (`.ps1`/`.bat`/`.sh`) corren OK y reportan **13/13**
+  copiando `audit-cert.md` a `~/.claude/skills`.
 
 ## Pendiente / fuera de alcance
-- ⚠️ **Bug preexistente del instalador** (no introducido por esta tarea): `install-skills.ps1` resuelve el origen
-  como `$PSScriptRoot\skills` (`scripts/windows/skills`) y el `.bat` como `%~dp0..\skills` (`scripts/skills`), pero
-  las skills viven en `skills/` en la raíz. Impide correr la instalación end-to-end desde el repo. Candidato a fix
-  aparte (apuntar el origen a la raíz: `Join-Path $PSScriptRoot "..\..\skills"` / `${SCRIPT_DIR}/../../skills`).
 - ⏳ Prueba funcional real de `/audit-cert` sobre un repo de cada stack (queda para uso en el día a día).

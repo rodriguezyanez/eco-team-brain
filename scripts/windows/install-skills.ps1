@@ -4,7 +4,7 @@
 # =============================================================
 param()
 
-$SkillsSrc  = Join-Path $PSScriptRoot "skills"
+$SkillsSrc  = Join-Path $PSScriptRoot "..\..\skills"
 $SkillsDest = Join-Path $env:USERPROFILE ".claude\skills"
 $Expected   = 13
 $Count      = 0

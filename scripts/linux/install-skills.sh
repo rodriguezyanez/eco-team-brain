@@ -19,7 +19,7 @@ info() { echo -e "${CYAN}[INFO]${NC}  $*"; }
 
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILLS_SRC="${SCRIPT_DIR}/skills"
+SKILLS_SRC="${SCRIPT_DIR}/../../skills"
 SKILLS_DEST="${HOME}/.claude/skills"
 EXPECTED=13
 COUNT=0

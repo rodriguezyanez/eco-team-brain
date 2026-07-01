@@ -5,7 +5,7 @@ REM Copia skills/*.md a %USERPROFILE%\.claude\skills\
 REM =============================================================
 setlocal enabledelayedexpansion
 
-set "SKILLS_SRC=%~dp0..\skills"
+set "SKILLS_SRC=%~dp0..\..\skills"
 set "SKILLS_DEST=%USERPROFILE%\.claude\skills"
 set "EXPECTED=13"
 set "COUNT=0"
