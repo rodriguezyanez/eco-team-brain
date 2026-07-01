@@ -124,6 +124,21 @@ sdd: implementar KafkaListener para el dominio de tarifas
 | 4 | Implementar | Código limpio siguiendo los skill files del equipo |
 | 5 | Verificar | Tests 95%+, JavaDoc completo, naming correcto |
 
+### /audit-cert — Auditoría pre-certificación
+
+Antes de mandar un entregable a certificación, audita que pasará los quality gates del pipeline Jenkins
+(SonarQube, OWASP Dependency-Check, Trivy) y el estándar KLAP. Soporta microservicios Spring Boot,
+AWS Lambda, APIs REST y sitios Angular.
+
+```
+/audit-cert
+```
+
+Detecta el stack, replica los gates de Jenkins (ejecuta Trivy y Dependency-Check si están instalados;
+predice el quality gate de Sonar sin server), usa los umbrales del propio repo con fallback al estándar KLAP,
+y emite un veredicto **APTO / APTO CON OBSERVACIONES / NO APTO** con un informe de hallazgos. Es de solo lectura:
+no modifica código.
+
 ### Guardian Angel — Code review pre-commit
 
 Hook que revisa cada commit contra las reglas del equipo antes de permitirlo:

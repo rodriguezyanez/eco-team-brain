@@ -144,6 +144,11 @@ La configuración se guarda en `%USERPROFILE%\.claude\brain-config.json` (por m�
 
 ---
 
+### Auditoría pre-certificación (`/audit-cert`)
+Antes de pasar un entregable a certificación, corre `/audit-cert` en Claude Code sobre el proyecto. Predice si pasará los gates del pipeline Jenkins (SonarQube, OWASP Dependency-Check, Trivy) y el estándar KLAP, y emite un veredicto **APTO / NO APTO** con informe de hallazgos. Soporta Spring Boot, AWS Lambda, APIs REST y Angular. Es de solo lectura (no modifica código). Se instala junto al resto de skills con `install-skills`.
+
+---
+
 ### Guardian Angel (Code Review)
 Instala el hook pre-commit en tu proyecto para que Claude valide tu código antes de cada commit:
 ```bash

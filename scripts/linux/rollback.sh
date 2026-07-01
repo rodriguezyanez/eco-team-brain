@@ -49,7 +49,7 @@ else
 fi
 
 BACKUP_DIR="$HOME/.claude/team-brain-backup"
-SKILL_FILES=(kafka-config.md kafka-listener.md processor.md repository.md webclient.md exceptions.md testing.md openapi.md skill-registry.md sdd-microservice.md sdd-checklist.md crear-microfrontend.md)
+SKILL_FILES=(kafka-config.md kafka-listener.md processor.md repository.md webclient.md exceptions.md testing.md openapi.md skill-registry.md sdd-microservice.md sdd-checklist.md crear-microfrontend.md audit-cert.md)
 
 if [ -d "$BACKUP_DIR" ]; then
     # ── Restauracion completa desde backup ──────────────────
