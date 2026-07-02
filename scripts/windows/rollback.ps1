@@ -3,7 +3,7 @@
 # =============================================================
 
 $BackupDir = Join-Path $env:USERPROFILE ".claude\team-brain-backup"
-$SkillFiles = @("kafka-config.md", "kafka-listener.md", "processor.md", "repository.md", "webclient.md", "exceptions.md", "testing.md", "openapi.md", "skill-registry.md", "sdd-microservice.md", "sdd-checklist.md", "crear-microfrontend.md")
+$SkillFiles = @("kafka-config.md", "kafka-listener.md", "processor.md", "repository.md", "webclient.md", "exceptions.md", "testing.md", "openapi.md", "skill-registry.md", "sdd-microservice.md", "sdd-checklist.md", "crear-microfrontend.md", "audit-cert.md")
 
 Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Red

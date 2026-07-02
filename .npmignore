@@ -2,6 +2,13 @@
 .git/
 .gitignore
 
+# IDE / editor
+.idea/
+.vscode/
+
+# Configuración local de Claude Code
+.claude/
+
 # Dependencias
 node_modules/
 package-lock.json

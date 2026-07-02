@@ -102,6 +102,7 @@ El build falla si la cobertura es menor al 95%.
 | Testing | `testing.md` | Template de tests con Mockito (AAA) y MockWebServer |
 | OpenAPI | `openapi.md` | Template `OpenApiConfig` para perfiles local/develop |
 | Crear Microfrontend | `crear-microfrontend.md` | Angular 19 + single-spa para MCF-BO y MCF-BYSF |
+| Auditoria de Certificacion | `audit-cert.md` | Audita un entregable (Spring Boot / Lambda / API / Angular) antes de certificacion: predice los gates de Jenkins (Sonar, OWASP Dependency-Check, Trivy) + estandar KLAP y emite veredicto APTO / NO APTO |
 
 ---
 

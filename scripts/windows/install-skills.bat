@@ -5,9 +5,9 @@ REM Copia skills/*.md a %USERPROFILE%\.claude\skills\
 REM =============================================================
 setlocal enabledelayedexpansion
 
-set "SKILLS_SRC=%~dp0..\skills"
+set "SKILLS_SRC=%~dp0..\..\skills"
 set "SKILLS_DEST=%USERPROFILE%\.claude\skills"
-set "EXPECTED=12"
+set "EXPECTED=13"
 set "COUNT=0"
 
 echo.
@@ -59,6 +59,7 @@ call :DO_COPY "skill-registry.md"
 call :DO_COPY "sdd-microservice.md"
 call :DO_COPY "sdd-checklist.md"
 call :DO_COPY "crear-microfrontend.md"
+call :DO_COPY "audit-cert.md"
 
 REM -----------------------------------------------------------
 :SUMMARY
