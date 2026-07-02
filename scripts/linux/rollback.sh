@@ -26,8 +26,11 @@ echo "    - Plugins de Claude Code"
 echo "    - Skills locales de ~/.claude/skills/"
 echo "    - CLAUDE.md de ~/.claude/"
 echo
-echo "  Los programas instalados (Docker, Node.js, Claude Code)"
-echo "  NO serán desinstalados."
+echo "  Los programas instalados (Docker, Node.js, Claude Code,"
+echo "  Trivy, OWASP Dependency-Check) NO serán desinstalados."
+echo "  Para quitarlos manualmente:"
+echo "    brew uninstall trivy   (o: sudo apt-get remove trivy)"
+echo "    rm -rf \"\$HOME/.klap/tools/dependency-check\""
 echo
 read -rp "   Confirmar desinstalación? [s/N]: " CONFIRM
 if [[ ! "${CONFIRM}" =~ ^[sS]$ ]]; then
@@ -49,7 +52,7 @@ else
 fi
 
 BACKUP_DIR="$HOME/.claude/team-brain-backup"
-SKILL_FILES=(kafka-config.md kafka-listener.md processor.md repository.md webclient.md exceptions.md testing.md openapi.md skill-registry.md sdd-microservice.md sdd-checklist.md crear-microfrontend.md audit-cert.md)
+SKILL_FILES=(kafka-config.md kafka-listener.md processor.md repository.md webclient.md exceptions.md testing.md openapi.md skill-registry.md sdd-microservice.md sdd-checklist.md crear-microfrontend.md auditoria.md web-artifacts-builder.md)
 
 if [ -d "$BACKUP_DIR" ]; then
     # ── Restauracion completa desde backup ──────────────────

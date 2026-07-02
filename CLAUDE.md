@@ -34,6 +34,10 @@ klap config reset
 
 # Backups
 klap backup                # Gestión de backups de volúmenes Docker
+
+# Herramientas de seguridad (gates de /auditoria)
+klap trivy                 # Instala Trivy (scanner de vulnerabilidades)
+klap depcheck              # Instala OWASP Dependency-Check CLI (mismo gate que Jenkins)
 ```
 
 Los scripts directos están en `scripts/windows/` (`.ps1`) y `scripts/linux/` (`.sh`). El CLI en `bin/klap.js` los invoca con `spawn`.
@@ -74,6 +78,8 @@ El registro destino está en `package.json` → `publishConfig.registry`.
 | `scripts/windows/brain-export.ps1` / `brain-import.ps1` | Export/import del grafo en JSON |
 | `scripts/windows/install-skills.ps1` | Copia `skills/*.md` a `~/.claude/skills/` |
 | `scripts/windows/install-hooks.ps1` | Instala hook pre-commit de Guardian Angel en un proyecto destino |
+| `scripts/windows/install-trivy.ps1` | Instala Trivy (winget/choco); idempotente, no aborta si falta el gestor |
+| `scripts/windows/install-depcheck.ps1` | Instala OWASP Dependency-Check CLI (choco o ZIP de release, v12.2.0) |
 
 Cada script Windows tiene su equivalente `.sh` en `scripts/linux/`.
 

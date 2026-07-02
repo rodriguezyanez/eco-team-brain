@@ -46,6 +46,8 @@ npm install -g .
 | `klap import <file>` | Importa y mergea un JSON de otro dev en tu Neo4j local. |
 | `klap obsidian` | Exporta el grafo a archivos Markdown compatibles con Obsidian. |
 | `klap backup <cmd>` | Gestión de backups: `backup`, `list`, `restore <archivo>`. |
+| `klap trivy` | Instala Trivy (scanner de vulnerabilidades) para los gates de `/auditoria`. |
+| `klap depcheck` | Instala OWASP Dependency-Check CLI (el mismo gate que corre Jenkins). |
 
 ### Gestión de Neo4j
 | Comando | Función |
@@ -144,8 +146,10 @@ La configuración se guarda en `%USERPROFILE%\.claude\brain-config.json` (por m�
 
 ---
 
-### Auditoría pre-certificación (`/audit-cert`)
-Antes de pasar un entregable a certificación, corre `/audit-cert` en Claude Code sobre el proyecto. Predice si pasará los gates del pipeline Jenkins (SonarQube, OWASP Dependency-Check, Trivy) y el estándar KLAP, y emite un veredicto **APTO / NO APTO** con informe de hallazgos. Soporta Spring Boot, AWS Lambda, APIs REST y Angular. Es de solo lectura (no modifica código). Se instala junto al resto de skills con `install-skills`.
+### Auditoría pre-certificación (`/auditoria`)
+Antes de pasar un entregable a certificación, corre `/auditoria` en Claude Code sobre el proyecto. Predice si pasará los gates del pipeline Jenkins (SonarQube, OWASP Dependency-Check, Trivy) y el estándar KLAP, y emite un veredicto **APTO / NO APTO**. Genera un informe Markdown (`auditoria-{proyecto}-{fecha}.md`) **y** un dashboard HTML autocontenido (`auditoria-{proyecto}-{fecha}.html`, vía la skill `web-artifacts-builder`) con gráficos arriba y el detalle + cómo solucionar cada incidencia abajo. Soporta Spring Boot, AWS Lambda, APIs REST y Angular. Es de solo lectura (no modifica código). Se instala con el resto de skills (`klap init` o `install-skills`).
+
+Para que ejecute los gates de verdad en vez de predecirlos, instala las herramientas una vez con `klap trivy` y `klap depcheck`. Dependency-Check requiere Java y, para la primera actualización de la base NVD, una [NVD API Key](https://nvd.nist.gov/developers/request-an-api-key). En proyectos Gradle con el plugin `org.owasp.dependencycheck` también podés correr `./gradlew dependencyCheckAnalyze` (idéntico a Jenkins).
 
 ---
 
