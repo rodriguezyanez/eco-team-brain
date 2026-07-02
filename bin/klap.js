@@ -62,6 +62,9 @@ if (!command) {
     console.log('  backup    Gestión de backups de volúmenes Docker');
     console.log('  rollback  Revierte la instalación y restaura backups');
     console.log('  config    Ver/cambiar la conexión Neo4j (host, usuario, password)');
+    console.log('\nHerramientas de seguridad (gates de /auditoria):');
+    console.log('  trivy     Instala Trivy (scanner de vulnerabilidades)');
+    console.log('  depcheck  Instala OWASP Dependency-Check CLI');
     console.log('\nGestión de Neo4j:');
     console.log('  up, down, restart, status, logs, browser');
     console.log('  mcp       Registra los MCP (team-brain + Context7) en Claude Code');
@@ -83,6 +86,9 @@ const commandMap = {
     'obsidian': isWin ? 'scripts/windows/export-obsidian.ps1' : 'scripts/linux/export-obsidian.sh',
     'backup': isWin ? 'scripts/windows/backup.ps1' : 'scripts/linux/backup.sh',
     'config': isWin ? 'scripts/windows/config-neo4j.ps1' : 'scripts/linux/config-neo4j.sh',
+    // Instaladores de herramientas de seguridad (gates de /auditoria)
+    'trivy': isWin ? 'scripts/windows/install-trivy.ps1' : 'scripts/linux/install-trivy.sh',
+    'depcheck': isWin ? 'scripts/windows/install-depcheck.ps1' : 'scripts/linux/install-depcheck.sh',
     // Comandos de gestión delegan en brain.ps1/brain.sh
     'up': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',
     'down': isWin ? 'scripts/windows/brain.ps1' : 'scripts/linux/brain.sh',

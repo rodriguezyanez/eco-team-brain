@@ -116,6 +116,15 @@ if (Test-Path $installScript) {
     Write-Host "[WARN] install-commands.ps1 no encontrado, omitiendo." -ForegroundColor Yellow
 }
 
+# ── Instalar skills en ~/.claude/skills ──────────────────────
+Write-Host "Instalando skills en Claude Code..."
+$skillsScript = Join-Path $PSScriptRoot "install-skills.ps1"
+if (Test-Path $skillsScript) {
+    & $skillsScript
+} else {
+    Write-Host "[WARN] install-skills.ps1 no encontrado, omitiendo." -ForegroundColor Yellow
+}
+
 Write-Host "Proximo paso — ejecuta en tu terminal:"
 Write-Host ""
 Write-Host "  klap mcp        (o:  .\scripts\windows\brain.bat mcp )"

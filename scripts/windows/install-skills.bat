@@ -7,7 +7,7 @@ setlocal enabledelayedexpansion
 
 set "SKILLS_SRC=%~dp0..\..\skills"
 set "SKILLS_DEST=%USERPROFILE%\.claude\skills"
-set "EXPECTED=13"
+set "EXPECTED=14"
 set "COUNT=0"
 
 echo.
@@ -59,7 +59,8 @@ call :DO_COPY "skill-registry.md"
 call :DO_COPY "sdd-microservice.md"
 call :DO_COPY "sdd-checklist.md"
 call :DO_COPY "crear-microfrontend.md"
-call :DO_COPY "audit-cert.md"
+call :DO_COPY "auditoria.md"
+call :DO_COPY "web-artifacts-builder.md"
 
 REM -----------------------------------------------------------
 :SUMMARY

@@ -88,6 +88,13 @@ Una vez instalado, el comando `klap` queda disponible globalmente en tu terminal
 | `klap obsidian` | Exporta el grafo a archivos Markdown para visualizar en Obsidian |
 | `klap backup <cmd>` | Gestión de backups: `backup`, `list`, `restore <archivo>` |
 
+### Herramientas de seguridad (gates de `/auditoria`)
+
+| Comando | Descripción |
+|---------|-------------|
+| `klap trivy` | Instala Trivy (winget/choco en Windows; brew/script oficial en Linux/mac) |
+| `klap depcheck` | Instala OWASP Dependency-Check CLI (el mismo gate que corre Jenkins) |
+
 ### Gestión de Neo4j
 
 | Comando | Función |
@@ -124,20 +131,26 @@ sdd: implementar KafkaListener para el dominio de tarifas
 | 4 | Implementar | Código limpio siguiendo los skill files del equipo |
 | 5 | Verificar | Tests 95%+, JavaDoc completo, naming correcto |
 
-### /audit-cert — Auditoría pre-certificación
+### /auditoria — Auditoría pre-certificación
 
 Antes de mandar un entregable a certificación, audita que pasará los quality gates del pipeline Jenkins
 (SonarQube, OWASP Dependency-Check, Trivy) y el estándar KLAP. Soporta microservicios Spring Boot,
 AWS Lambda, APIs REST y sitios Angular.
 
 ```
-/audit-cert
+/auditoria
 ```
 
 Detecta el stack, replica los gates de Jenkins (ejecuta Trivy y Dependency-Check si están instalados;
 predice el quality gate de Sonar sin server), usa los umbrales del propio repo con fallback al estándar KLAP,
-y emite un veredicto **APTO / APTO CON OBSERVACIONES / NO APTO** con un informe de hallazgos. Es de solo lectura:
-no modifica código.
+y emite un veredicto **APTO / APTO CON OBSERVACIONES / NO APTO**. Genera dos entregables junto al proyecto:
+un **informe Markdown** (`auditoria-{proyecto}-{fecha}.md`) y un **dashboard HTML** autocontenido
+(`auditoria-{proyecto}-{fecha}.html`, vía la skill `web-artifacts-builder`) con gráficos de los resultados
+arriba y el detalle + cómo solucionar cada incidencia abajo. Es de solo lectura: no modifica código.
+
+Para que ejecute los gates de verdad (en vez de predecirlos estáticamente), instala las herramientas una vez
+con `klap trivy` y `klap depcheck`. En proyectos con el plugin Gradle `org.owasp.dependencycheck` el gate de
+OWASP también se puede correr con `./gradlew dependencyCheckAnalyze` (idéntico a Jenkins).
 
 ### Guardian Angel — Code review pre-commit
 

@@ -1,8 +1,8 @@
 ---
-name: audit-cert
-description: Audita un entregable KLAP (microservicio Spring Boot, AWS Lambda, API REST o sitio Angular) antes de pasar a certificacion. Predice si pasara los quality gates del pipeline Jenkins (SonarQube, OWASP Dependency-Check, Trivy) y el estandar KLAP BYSF, y emite un veredicto unico APTO / NO APTO con informe de hallazgos por severidad. Solo lectura: no modifica codigo.
+name: auditoria
+description: Audita un entregable KLAP (microservicio Spring Boot, AWS Lambda, API REST o sitio Angular) antes de pasar a certificacion. Predice si pasara los quality gates del pipeline Jenkins (SonarQube, OWASP Dependency-Check, Trivy) y el estandar KLAP BYSF, y emite un veredicto unico APTO / NO APTO con informe de hallazgos por severidad (Markdown) y un dashboard HTML con graficos. Solo lectura: no modifica codigo.
 disable-model-invocation: true
-allowed-tools: Read Grep Glob Bash TaskCreate TaskUpdate TaskList
+allowed-tools: Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList
 ---
 
 # Auditoria de pre-certificacion — Estandar KLAP + gates de Jenkins
@@ -131,9 +131,9 @@ Severidades de hallazgos (alineadas a `code-review-expert` / `kafka-audit`):
 
 ---
 
-## PASO 6 — Informe
+## PASO 6 — Informe Markdown
 
-Genera el archivo `audit-cert-{nombre-proyecto}-{YYYY-MM-DD}.md` con este formato:
+Genera el archivo `auditoria-{nombre-proyecto}-{YYYY-MM-DD}.md` con este formato:
 
 ```markdown
 # Informe de Auditoria de Certificacion — {NOMBRE_PROYECTO}
@@ -177,3 +177,47 @@ Genera el archivo `audit-cert-{nombre-proyecto}-{YYYY-MM-DD}.md` con este format
 
 No apliques correcciones. Si el dev pide arreglar, indicale la skill correspondiente
 (`code-review-expert`, `kafka-audit`, `sdd-microservice`, etc.) por cada bloqueante.
+
+### 6.1 Datos estructurados (fuente del dashboard)
+
+Ademas del Markdown, construye en memoria un objeto de datos con **exactamente** esta forma. Es la
+**unica fuente** del dashboard HTML (PASO 7): no re-parsees el Markdown para graficar.
+
+```json
+{
+  "project": "{nombre-proyecto}",
+  "date": "{YYYY-MM-DD}",
+  "stacks": ["Spring Boot", "Angular"],
+  "verdict": "APTO | APTO CON OBSERVACIONES | NO APTO",
+  "gates": [
+    { "name": "SonarQube", "status": "PASSED|FAILED", "threshold": "cobertura>=95%, 0 bugs...", "source": "repo|KLAP", "executed": "analitico" },
+    { "name": "OWASP Dependency-Check", "status": "OK|FAIL", "threshold": "CVSS>=7.0", "source": "repo|KLAP", "executed": "ejecutado|estatico" },
+    { "name": "Trivy", "status": "OK|FAIL", "threshold": "CRITICAL/HIGH", "source": "repo|KLAP", "executed": "ejecutado|no ejecutado" }
+  ],
+  "metrics": { "coverage": 87.5, "coverageThreshold": 95, "duplication": 4.1, "duplicationThreshold": 3 },
+  "findingsBySeverity": { "CRITICO": 0, "ALTO": 0, "MEDIO": 0, "BAJO": 0, "SUGERENCIA": 0 },
+  "findings": [
+    { "id": "CRITICO-001", "severity": "CRITICO", "gate": "Trivy", "location": "Dockerfile:3", "description": "...", "remediation": "Como solucionarlo para la proxima iteracion (que skill usar)" }
+  ],
+  "blockers": ["[CRITICO-001] breve", "[ALTO-001] breve"]
+}
+```
+
+Reglas: `metrics.coverage`/`duplication` son numeros (usa `null` si no se pudo medir). `findingsBySeverity`
+son conteos. Cada `finding.remediation` debe decir **como solucionar la incidencia** para pasar en la
+siguiente iteracion. `blockers` lista solo CRITICO/ALTO.
+
+---
+
+## PASO 7 — Dashboard HTML
+
+Invoca la skill **`web-artifacts-builder`** pasandole el objeto JSON del PASO 6.1 para generar el archivo
+`auditoria-{nombre-proyecto}-{YYYY-MM-DD}.html` en la raiz del proyecto, junto al informe `.md`.
+
+El dashboard debe tener:
+- **Arriba (graficos):** banner de veredicto, estado por gate (Sonar/OWASP/Trivy), dona/barras de hallazgos
+  por severidad, y gauges de cobertura y duplicacion vs umbral.
+- **Abajo (detalle):** tabla de hallazgos con severidad, gate, `archivo:linea`, descripcion y **como
+  solucionar** (columna de remediacion), mas el checklist de bloqueantes.
+
+El HTML es autocontenido (sin CDNs, CSP-safe). Reporta al dev la ruta del `.md` y del `.html` generados.

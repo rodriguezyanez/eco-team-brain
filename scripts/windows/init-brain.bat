@@ -99,6 +99,16 @@ echo   Base de datos : %USE_DB%
 echo   Bolt URI      : bolt://%NEO4J_HOST%:7687
 echo =====================================================
 echo.
+
+REM ── Instalar skills en %USERPROFILE%\.claude\skills ──────────
+echo Instalando skills en Claude Code...
+if exist "%~dp0install-skills.bat" (
+    call "%~dp0install-skills.bat"
+) else (
+    echo [WARN] install-skills.bat no encontrado, omitiendo.
+)
+echo.
+
 echo Proximo paso:
 echo   brain.bat mcp
 echo.

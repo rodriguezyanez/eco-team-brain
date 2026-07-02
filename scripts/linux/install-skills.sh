@@ -21,7 +21,7 @@ info() { echo -e "${CYAN}[INFO]${NC}  $*"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_SRC="${SCRIPT_DIR}/../../skills"
 SKILLS_DEST="${HOME}/.claude/skills"
-EXPECTED=13
+EXPECTED=14
 COUNT=0
 
 FILES=(
@@ -37,7 +37,8 @@ FILES=(
     "sdd-microservice.md"
     "sdd-checklist.md"
     "crear-microfrontend.md"
-    "audit-cert.md"
+    "auditoria.md"
+    "web-artifacts-builder.md"
 )
 
 echo ""

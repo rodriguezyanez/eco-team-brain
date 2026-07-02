@@ -1,4 +1,4 @@
-# =============================================================
+﻿# =============================================================
 # install-commands.ps1 — Instala commands/ y workflows/ en Claude Code
 # Si PowerShell bloquea: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 # =============================================================

@@ -1,9 +1,9 @@
-# =============================================================
+﻿# =============================================================
 # rollback.ps1 — Revierte la instalación del Ecosistema Klap
 # =============================================================
 
 $BackupDir = Join-Path $env:USERPROFILE ".claude\team-brain-backup"
-$SkillFiles = @("kafka-config.md", "kafka-listener.md", "processor.md", "repository.md", "webclient.md", "exceptions.md", "testing.md", "openapi.md", "skill-registry.md", "sdd-microservice.md", "sdd-checklist.md", "crear-microfrontend.md", "audit-cert.md")
+$SkillFiles = @("kafka-config.md", "kafka-listener.md", "processor.md", "repository.md", "webclient.md", "exceptions.md", "testing.md", "openapi.md", "skill-registry.md", "sdd-microservice.md", "sdd-checklist.md", "crear-microfrontend.md", "auditoria.md", "web-artifacts-builder.md")
 
 Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Red
@@ -17,8 +17,11 @@ Write-Host "    - Plugins de Claude Code"
 Write-Host "    - Skills locales de %USERPROFILE%\.claude\skills\"
 Write-Host "    - CLAUDE.md de %USERPROFILE%\.claude\"
 Write-Host ""
-Write-Host "  Los programas instalados (Docker, Node.js, Claude Code)"
-Write-Host "  NO serán desinstalados."
+Write-Host "  Los programas instalados (Docker, Node.js, Claude Code,"
+Write-Host "  Trivy, OWASP Dependency-Check) NO serán desinstalados."
+Write-Host "  Para quitarlos manualmente:"
+Write-Host "    winget uninstall AquaSecurity.Trivy   (o: choco uninstall trivy)"
+Write-Host "    Remove-Item `"$env:USERPROFILE\.klap\tools\dependency-check`" -Recurse -Force"
 Write-Host ""
 
 $confirm = Read-Host "   Confirmar desinstalación? [s/N]"
