@@ -1,4 +1,4 @@
-# =============================================================
+﻿# =============================================================
 # brain-config.ps1 — Configuracion de conexion Neo4j (Team Brain)
 #
 # Solo define funciones (idempotente al hacer dot-source).

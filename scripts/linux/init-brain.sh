@@ -132,6 +132,15 @@ else
     echo "[WARN] install-commands.sh no encontrado, omitiendo."
 fi
 
+# ── Instalar skills en ~/.claude/skills ──────────────────────
+echo "Instalando skills en Claude Code..."
+SKILLS_SCRIPT="$(dirname "$0")/install-skills.sh"
+if [ -f "$SKILLS_SCRIPT" ]; then
+    bash "$SKILLS_SCRIPT"
+else
+    echo "[WARN] install-skills.sh no encontrado, omitiendo."
+fi
+
 echo "Próximo paso: registra el MCP en Claude Code:"
 echo ""
 echo "  claude mcp add-json \"team-brain\" '{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"${NEO4J_USER}\",\"NEO4J_PASSWORD\":\"${NEO4J_PASS}\",\"NEO4J_DATABASE\":\"${USE_DB}\"}}'"

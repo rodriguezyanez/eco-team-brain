@@ -6,7 +6,7 @@ param()
 
 $SkillsSrc  = Join-Path $PSScriptRoot "..\..\skills"
 $SkillsDest = Join-Path $env:USERPROFILE ".claude\skills"
-$Expected   = 13
+$Expected   = 14
 $Count      = 0
 
 $Files = @(
@@ -22,7 +22,8 @@ $Files = @(
     "sdd-microservice.md",
     "sdd-checklist.md",
     "crear-microfrontend.md",
-    "audit-cert.md"
+    "auditoria.md",
+    "web-artifacts-builder.md"
 )
 
 Write-Host ""
