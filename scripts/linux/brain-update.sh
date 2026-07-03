@@ -223,17 +223,17 @@ merge_node "Relaciones Standard->Templates" \
 echo ""
 info "── Verificacion del grafo (Standard vs Memoria del equipo) ──"
 
-VERIFY_RESP=$(curl -s \
+VERIFY_HTTP_CODE=$(curl -s -o /tmp/neo4j_verify_resp.json -w "%{http_code}" \
     -u "${NEO4J_USER}:${NEO4J_PASS}" \
     "${ENDPOINT}" \
     -H "Content-Type: application/json" \
-    -d '{"statements":[{"statement":"MATCH (n:Entity) RETURN n.entityType as tipo, count(n) as total ORDER BY total DESC"}]}' 2>/dev/null)
+    -d '{"statements":[{"statement":"MATCH (n:Entity) RETURN n.entityType as tipo, count(n) as total ORDER BY total DESC"}]}' 2>/dev/null || echo "000")
 
-if command -v python3 &>/dev/null; then
+if [[ "$VERIFY_HTTP_CODE" == "200" && -s /tmp/neo4j_verify_resp.json ]] && command -v python3 &>/dev/null; then
     echo ""
     echo -e "  ${WHITE}Tipo                   | Total${NC}"
     echo -e "  ${GRAY}---------------------- + -----${NC}"
-    echo "$VERIFY_RESP" | python3 - <<'PYEOF'
+    python3 - /tmp/neo4j_verify_resp.json <<'PYEOF' || warn "No se pudo interpretar la respuesta de Neo4j (verificacion omitida, los datos ya se actualizaron)."
 import json, sys
 
 STANDARD_TYPES = {"Standard","Stack","Dependencies","Architecture","Principles",
@@ -246,7 +246,8 @@ YELLOW = '\033[1;33m'
 GRAY   = '\033[0;37m'
 NC     = '\033[0m'
 
-data = json.load(sys.stdin)
+with open(sys.argv[1]) as f:
+    data = json.load(f)
 for row in data.get("results", [{}])[0].get("data", []):
     tipo  = row["row"][0] or "(sin tipo)"
     total = row["row"][1]
@@ -259,8 +260,10 @@ for row in data.get("results", [{}])[0].get("data", []):
     print(f"  {color}{tipo:<22}| {total}{suffix}{NC}")
 PYEOF
 else
-    echo "$VERIFY_RESP"
+    warn "No se pudo verificar el grafo (HTTP ${VERIFY_HTTP_CODE} o respuesta vacia). Esto no afecta los datos ya actualizados."
 fi
+
+rm -f /tmp/neo4j_verify_resp.json
 
 rm -f /tmp/neo4j_update_resp.json
 
