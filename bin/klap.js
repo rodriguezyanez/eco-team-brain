@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
-const https = require('https');
 
 const isWin = process.platform === 'win32';
 const command = process.argv[2];
@@ -10,36 +9,31 @@ const command = process.argv[2];
 // -- Lógica de comprobación de actualizaciones --
 let updateMessage = null;
 
+function isNewerVersion(remote, local) {
+    const remoteParts = remote.split('.').map(Number);
+    const localParts = local.split('.').map(Number);
+    for (let i = 0; i < Math.max(remoteParts.length, localParts.length); i++) {
+        const r = remoteParts[i] || 0;
+        const l = localParts[i] || 0;
+        if (r !== l) return r > l;
+    }
+    return false;
+}
+
 function checkUpdates() {
     return new Promise((resolve) => {
         try {
             const localPkg = require('../package.json');
-            const options = {
-                hostname: 'raw.githubusercontent.com',
-                port: 443,
-                path: '/rodriguezyanez/eco-team-brain/master/package.json',
-                method: 'GET',
-                timeout: 2500
-            };
-
-            const req = https.request(options, (res) => {
-                if (res.statusCode !== 200) return resolve();
-                let data = '';
-                res.on('data', (chunk) => { data += chunk; });
-                res.on('end', () => {
-                    try {
-                        const remotePkg = JSON.parse(data);
-                        if (remotePkg.version && remotePkg.version !== localPkg.version) {
-                            updateMessage = `\n---------------------------------------------------------\n\x1b[33m💡 ¡Nueva versión del Ecosistema Klap disponible!\x1b[0m\nVersión actual: \x1b[31m${localPkg.version}\x1b[0m -> Nueva versión: \x1b[32m${remotePkg.version}\x1b[0m\nEjecuta: \x1b[36mnpm update -g @rodriguezyanez/eco-team-brain\x1b[0m para actualizar.\n---------------------------------------------------------\n`;
-                        }
-                    } catch(e) {}
-                    resolve();
-                });
+            // Consulta la versión realmente publicada en el registry (no el package.json
+            // de master, que puede quedar adelantado si el bump se pushea antes del npm publish).
+            exec(`npm view ${localPkg.name} version`, { timeout: 4000 }, (err, stdout) => {
+                if (err) return resolve();
+                const remoteVersion = stdout.trim();
+                if (remoteVersion && isNewerVersion(remoteVersion, localPkg.version)) {
+                    updateMessage = `\n---------------------------------------------------------\n\x1b[33m💡 ¡Nueva versión del Ecosistema Klap disponible!\x1b[0m\nVersión actual: \x1b[31m${localPkg.version}\x1b[0m -> Nueva versión: \x1b[32m${remoteVersion}\x1b[0m\nEjecuta: \x1b[36mnpm update -g @rodriguezyanez/eco-team-brain\x1b[0m para actualizar.\n---------------------------------------------------------\n`;
+                }
+                resolve();
             });
-
-            req.on('error', () => { resolve(); });
-            req.on('timeout', () => { req.destroy(); resolve(); });
-            req.end();
         } catch (e) {
             resolve();
         }
