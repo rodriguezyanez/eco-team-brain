@@ -1,5 +1,6 @@
 ﻿# =============================================================
-# init-brain.ps1 — Inicializa Team Brain en Neo4j
+# init-brain.ps1 — Levanta el contenedor e inicializa Team Brain
+# Idempotente: se puede ejecutar varias veces sin romper nada
 # Uso: .\init-brain.ps1
 #      .\init-brain.ps1 -Host 192.168.1.50 -Password "mi-password"
 # =============================================================
@@ -14,6 +15,7 @@ param(
 $BaseUrl = "http://${Neo4jHost}:${Neo4jPort}"
 $Creds   = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${User}:${Password}"))
 $Headers = @{ "Content-Type" = "application/json"; "Authorization" = "Basic $Creds" }
+$ComposeFile = Join-Path $PSScriptRoot "..\..\docker-compose.yml"
 
 function Write-Step($msg) { Write-Host "  -> $msg" -NoNewline }
 function Write-Ok        { Write-Host " [OK]"  -ForegroundColor Green }
@@ -36,6 +38,17 @@ Write-Host "=====================================================" -ForegroundCo
 Write-Host "  Team Brain -- Inicializacion de base de datos"      -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host "  Host: $BaseUrl"
+Write-Host ""
+
+# ── Levantar contenedor Neo4j ────────────────────────────────
+Write-Host "Levantando contenedor Neo4j..."
+docker compose -f $ComposeFile up -d
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "  Contenedor Neo4j corriendo." -ForegroundColor Green
+} else {
+    Write-Host "[ERROR] No se pudo levantar el contenedor. Verifica que Docker Desktop este abierto." -ForegroundColor Red
+    exit 1
+}
 Write-Host ""
 
 # ── Esperar Neo4j ─────────────────────────────────────────────
@@ -125,15 +138,13 @@ if (Test-Path $skillsScript) {
     Write-Host "[WARN] install-skills.ps1 no encontrado, omitiendo." -ForegroundColor Yellow
 }
 
-Write-Host "Proximo paso — ejecuta en tu terminal:"
-Write-Host ""
-Write-Host "  klap mcp        (o:  .\scripts\windows\brain.bat mcp )"
-Write-Host ""
-Write-Host "  Registra team-brain y Context7 en Claude Code con el escaping"
-Write-Host "  correcto. NO pegues el JSON a mano: las comillas simples se"
-Write-Host "  rompen en cmd.exe ('Invalid configuration: Invalid input')."
-Write-Host ""
-Write-Host "  Si aun asi lo necesitas manual en CMD (comillas dobles escapadas):"
-$manualJson = '{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"neo4j\",\"NEO4J_PASSWORD\":\"' + $Password + '\",\"NEO4J_DATABASE\":\"' + $useDb + '\"}}'
-Write-Host ('  claude mcp add-json "team-brain" "' + $manualJson + '" --scope user')
+# ── Registrar MCPs (team-brain + Context7) ───────────────────
+Write-Host "Registrando MCPs en Claude Code..."
+$mcpScript = Join-Path $PSScriptRoot "brain.ps1"
+if (Test-Path $mcpScript) {
+    & $mcpScript -Action mcp
+} else {
+    Write-Host "[WARN] brain.ps1 no encontrado, omitiendo registro de MCPs." -ForegroundColor Yellow
+    Write-Host "Registra manualmente con: klap mcp"
+}
 Write-Host ""

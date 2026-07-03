@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================
-# init-brain.sh — Inicializa la base de datos "memory" en Neo4j
-# Ejecutar UNA VEZ después de levantar el contenedor por primera vez
+# init-brain.sh — Levanta el contenedor e inicializa Team Brain
+# Idempotente: se puede ejecutar varias veces sin romper nada
 # =============================================================
 
 set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPOSE_FILE="${SCRIPT_DIR}/../../docker-compose.yml"
 
 NEO4J_HOST="${NEO4J_HOST:-localhost}"
 NEO4J_PORT="${NEO4J_PORT:-7474}"
@@ -14,6 +17,16 @@ BASE_URL="http://${NEO4J_HOST}:${NEO4J_PORT}"
 
 echo "🧠 Inicializando Team Brain..."
 echo "   Host: ${BASE_URL}"
+echo ""
+
+# ── Levantar contenedor Neo4j ──────────────────────────────────
+echo "🐳 Levantando contenedor Neo4j..."
+if docker compose -f "${COMPOSE_FILE}" up -d; then
+    echo "✅ Contenedor Neo4j corriendo."
+else
+    echo "❌ No se pudo levantar el contenedor. Verifica que Docker esté corriendo."
+    exit 1
+fi
 echo ""
 
 # ── Esperar a que Neo4j esté listo ────────────────────────────
@@ -141,6 +154,13 @@ else
     echo "[WARN] install-skills.sh no encontrado, omitiendo."
 fi
 
-echo "Próximo paso: registra el MCP en Claude Code:"
+# ── Registrar MCPs (team-brain + Context7) ───────────────────
 echo ""
-echo "  claude mcp add-json \"team-brain\" '{\"command\":\"npx\",\"args\":[\"-y\",\"@knowall-ai/mcp-neo4j-agent-memory\"],\"env\":{\"NEO4J_URI\":\"bolt://localhost:7687\",\"NEO4J_USERNAME\":\"${NEO4J_USER}\",\"NEO4J_PASSWORD\":\"${NEO4J_PASS}\",\"NEO4J_DATABASE\":\"${USE_DB}\"}}'"
+echo "Registrando MCPs en Claude Code..."
+MCP_SCRIPT="${SCRIPT_DIR}/brain.sh"
+if [ -f "$MCP_SCRIPT" ]; then
+    bash "$MCP_SCRIPT" mcp
+else
+    echo "[WARN] brain.sh no encontrado, omitiendo registro de MCPs."
+    echo "Registra manualmente con: klap mcp"
+fi

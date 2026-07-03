@@ -70,7 +70,7 @@ El registro destino está en `package.json` → `publishConfig.registry`.
 
 | Script | Propósito |
 |--------|-----------|
-| `scripts/windows/init-brain.ps1` | Crea constraints, índices y nodos base en Neo4j via HTTP API; llama a `install-commands.ps1` al final |
+| `scripts/windows/init-brain.ps1` | Levanta el contenedor Docker (`docker compose up -d`), crea constraints/índices/nodos base en Neo4j via HTTP API, instala commands/skills y registra los MCPs (llama a `brain.ps1 mcp` al final) |
 | `scripts/windows/install-commands.ps1` | Copia `commands/` y `workflows/` recursivamente a `~/.claude/` |
 | `scripts/windows/brain.ps1` | Comandos de ciclo de vida de Neo4j y registro de MCPs |
 | `scripts/windows/brain-sync.ps1` | Sincronización de `pending-memories.jsonl` con Neo4j |
