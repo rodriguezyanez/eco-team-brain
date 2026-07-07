@@ -85,8 +85,6 @@ logs/
 application-local.yml
 application-local.properties
 
-*.md
-!CLAUDE.md
 *.txt
 .gitattributes
 
