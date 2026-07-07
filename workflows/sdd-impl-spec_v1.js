@@ -205,13 +205,9 @@ Protocolo OBLIGATORIO:
 4. JavaDoc en todos los métodos públicos (formato del equipo KLAP BYSF)
 5. Seguir naming conventions: cl.klap.bysf.{modulo}.{app}.dominio.{dominio}.*
 6. Sin placeholders ni TODOs sin reportar
-7. Si el componente tiene un patrón GoF definido en el spec: leer ~/.claude/commands/design_patterns/skill.md antes de generar código
-8. Si la tarea implementa KafkaConfig o archivos de configuración: leer ~/.claude/commands/spring-properties.md y generar los 4 archivos application-{ambiente}.properties
-9. Si la tarea implementa operaciones I/O-bound concurrentes (múltiples llamadas HTTP, queries paralelas, escrituras en paralelo): usar CompletableFuture.allOf() o @Async con ThreadPoolTaskExecutor — nunca bloquear el hilo de procesamiento principal del componente
-10. Si la tarea accede a estado compartido desde múltiples hilos o instancias: documentar la estrategia de sincronización (isolation level, SELECT FOR UPDATE, clave de idempotencia) ANTES de escribir código — si no está definida en el spec, consultar al dev antes de continuar
-11. Autocheck de calidad al finalizar
-12. Marcar la tarea ${task.id} como [x] en ${spec.planFile} si se completó
-13. Marcar la tarea ${task.id} como [!] en ${spec.planFile} si quedó bloqueada, con motivo`,
+7. Autocheck de calidad al finalizar
+8. Marcar la tarea ${task.id} como [x] en ${spec.planFile} si se completó
+9. Marcar la tarea ${task.id} como [!] en ${spec.planFile} si quedó bloqueada, con motivo`,
       { schema: TASK_SCHEMA, label: task.id, phase: 'Implementar' }
     ))
   )
@@ -273,12 +269,12 @@ Referencia de arquitectura: ${spec.specFile}
 
 Analiza OBLIGATORIAMENTE:
 1. OWASP Top 10 (2021): A01–A10
-2. Amenazas de stack según arquitectura del servicio (leer el spec para determinar cuáles aplican):
-   - SSRF (CWE-918) — si hay llamadas HTTP a URLs externas
-   - Deserialización de mensajes/datos (CWE-502) — si hay consumo de mensajes o datos serializados desde fuentes externas
-   - SpEL Injection (CWE-917) — si hay evaluación de expresiones dinámicas
-   - Mass Assignment (CWE-915) — si hay endpoints REST con binding automático
-   - Actuator expuesto (CWE-200) — si Spring Actuator está habilitado
+2. Amenazas de stack:
+   - SSRF (CWE-918)
+   - Deserialización Kafka (CWE-502)
+   - SpEL Injection (CWE-917)
+   - Mass Assignment (CWE-915)
+   - Actuator expuesto (CWE-200)
 3. NIST SP 800-53: controles AC-3, AU-3, SC-8
 4. MITRE ATT&CK: técnicas T1190, T1552, T1059
 
@@ -342,10 +338,6 @@ Verifica también:
 - Reglas DO/DON'T del equipo
 - Consulta ~/.claude/commands/sdd-checklist.md
 - Consulta ~/.claude/commands/defectos-tipicos-checklist.md (6 categorías)
-- Patrones GoF implementados coinciden con los documentados en el spec (Fase 2)
-- Si hay Kafka: existen los 4 archivos application-{ambiente}.properties y siguen spring-properties.md (enable.metrics.push=false, max.poll.records=1, 4 ambientes, sin credenciales hardcodeadas)
-- Si hay operaciones I/O-bound concurrentes: verificar que los hilos de procesamiento no quedan bloqueados y que los timeouts están configurados
-- Si hay acceso concurrente a estado compartido: verificar isolation level de transacciones, idempotencia del componente ante operaciones duplicadas, y ausencia de race conditions en tests de integración
 
 passed = true SOLO si tests 100% verde Y cobertura ≥ 95%.
 

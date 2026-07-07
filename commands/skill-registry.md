@@ -132,6 +132,8 @@ check.dependsOn jacocoTestCoverageVerification
 | OpenAPI | `openapi.md` | Template `OpenApiConfig` para perfiles local/develop, anotaciones de controllers | Al exponer la API con Swagger |
 | Crear Microfrontend | `crear-microfrontend.md` | Patron 1 (mcf-bo + BFF existente, CRUD Aurora) y Patron 2 (mcf-bysf + BFF propio, proxy API externa). Angular 19 + single-spa | Al crear un nuevo MCF o BFF frontend |
 | Release & Publish | `release-publish.md` | Flujo completo: git flow release finish, bump version, push master/develop/tag, publicar en GitHub Packages | Al cerrar una release del ecosistema klap |
+| Design Patterns | `design_patterns/skill.md` | Catálogo GoF completo (Creacionales, Estructurales, Comportamiento) con ejemplos concretos por patrón | Antes de diseñar cualquier componente nuevo — para identificar e implementar el patrón correcto |
+| Spring Properties | `spring-properties.md` | Templates de `application-{ambiente}.properties` para los 4 ambientes (local/develop/qa/master) con Kafka, seguridad y logging | Al configurar cualquier microservicio con Kafka o al crear los archivos de ambiente |
 
 ---
 
@@ -140,10 +142,12 @@ check.dependsOn jacocoTestCoverageVerification
 Al crear un nuevo dominio o componente, seguir este orden:
 
 ```
+0. design_patterns/skill.md → Identifica que patrones aplican ANTES de escribir cualquier componente
 1. exceptions.md     → Define las excepciones del dominio
 2. repository.md     → Define el acceso a datos
 3. processor.md      → Define la logica de negocio (saga)
 4. kafka-config.md   → Configura Kafka del dominio
+4.5. spring-properties.md → Genera los 4 archivos application-{ambiente}.properties
 5. kafka-listener.md → Crea el consumer
 6. webclient.md      → Si hay integracion HTTP externa
 7. openapi.md        → Si el servicio expone endpoints REST

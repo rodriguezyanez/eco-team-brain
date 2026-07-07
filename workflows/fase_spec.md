@@ -1,5 +1,5 @@
 # Fase Spec — Diseño y Planificación SDD
-**Versión:** 1.0 · **Fecha:** 2026-06-04
+**Versión:** 2.0 · **Fecha:** 2026-07-06
 
 ---
 
@@ -93,12 +93,15 @@ FIN — el dev gatilla manualmente el workflow de implementación
 ### Entregable obligatorio
 
 - [ ] Responsabilidad del microservicio en el dominio
-- [ ] Topics Kafka involucrados (input, output, DLQ, notificación)
+- [ ] Mecanismos de integración asíncrona identificados (topics/queues de entrada, salida, DLQ) — si la arquitectura incluye mensajería
 - [ ] Tablas PostgreSQL que gestiona
-- [ ] Servicios externos que consume (WebClient)
+- [ ] Servicios externos que consume (HTTP, gRPC, mensajería saliente, SDK externo, etc.)
 - [ ] Componentes a crear y sus dependencias
 - [ ] Requisitos funcionales (RF) con criterios de aceptación (`CA-XX`)
 - [ ] Requisitos no funcionales (RNF)
+- [ ] Operaciones CPU-bound identificadas (procesamiento pesado, transformación de datos en volumen, cálculos que saturan CPU)
+- [ ] Operaciones I/O-bound identificadas (llamadas HTTP, consultas BD, lectura/escritura de archivos, mensajería — cualquier operación que espera un recurso externo)
+- [ ] Escenarios de acceso concurrente documentados (múltiples instancias del servicio procesando el mismo recurso, acceso compartido a registros BD)
 - [ ] Casos límite documentados como `CL-XX` (formatos incorrectos, nulos, rangos fuera de límite, caracteres especiales)
 - [ ] Defectos típicos del equipo cubiertos como `CL-XX`: duplicados, nulos, validación de entrada, casos de borde, trazabilidad, control de acceso — consultar `~/.claude/commands/defectos-tipicos-checklist.md` para verificar que las 6 categorías están representadas
 - [ ] Consulta a Neo4j confirmada (`memory_search`) o fallback a `~/.claude/commands/skill-registry.md`
@@ -116,24 +119,48 @@ El agente debe leer los skills correspondientes a los componentes identificados 
 
 | Componente identificado en Fase 1 | Skill a leer |
 |----------------------------------|-------------|
+| Todo desarrollo nuevo (siempre) | `~/.claude/commands/design_patterns/skill.md` |
 | Kafka consumer | `~/.claude/commands/kafka-listener.md` |
 | Kafka config | `~/.claude/commands/kafka-config.md` |
+| Configuración de microservicio con Kafka | `~/.claude/commands/spring-properties.md` |
 | Lógica de negocio (Saga) | `~/.claude/commands/processor.md` |
 | Acceso a datos | `~/.claude/commands/repository.md` |
 | Cliente HTTP externo | `~/.claude/commands/webclient.md` |
 | Jerarquía de excepciones | `~/.claude/commands/exceptions.md` |
 | Endpoints REST | `~/.claude/commands/openapi.md` |
 
+### Identificación de patrones de diseño
+
+Leer `design_patterns/skill.md` y contrastar contra los requerimientos de Fase 1. Si existe ambigüedad sobre el comportamiento del dominio, usar estas guías para identificar qué patrones proponer en la arquitectura:
+
+- **Creacionales** — ¿La creación de objetos de dominio varía según el tipo de mensaje o contexto? ¿Existen entidades que deben replicarse desde una plantilla base?
+- **Estructurales** — ¿Hay subsistemas externos (APIs, Kafka, BD) que el resto del código debería consumir sin conocer su complejidad? ¿Se necesita adaptar contratos de interfaces incompatibles?
+- **Comportamiento** — ¿La lógica de procesamiento cambia según el estado actual de la entidad o el tipo de evento recibido? ¿Varios componentes necesitan reaccionar ante un mismo cambio? ¿Se requiere registrar, revertir o auditar cambios de estado? ¿Existe una secuencia de pasos con variantes por tipo?
+
+### Análisis de concurrencia y paralelismo
+
+Con base en los ítems CPU-bound, I/O-bound y acceso concurrente identificados en Fase 1, definir el modelo de concurrencia ANTES de proponer la arquitectura. Aplica independientemente del tipo de arquitectura (REST, eventos, batch, híbrida).
+
+- **CPU-bound** — ¿Hay operaciones de cómputo intensivo que deben aislarse del hilo principal de procesamiento? Evaluar `@Async` + `ThreadPoolTaskExecutor` o `CompletableFuture` para no degradar el tiempo de respuesta del servicio.
+
+- **I/O-bound** — ¿Hay múltiples operaciones que esperan recursos externos (HTTP, BD, archivos, colas) y pueden ejecutarse en paralelo sin dependencia entre sí? Evaluar `CompletableFuture.allOf()` para reducir la latencia total.
+
+- **Race conditions** — ¿El servicio puede tener múltiples instancias o hilos accediendo al mismo registro o recurso compartido? Definir estrategia según el tipo de recurso: isolation level de transacción DB, `SELECT FOR UPDATE`, clave de idempotencia, o lock distribuido si el estado es externo al servicio.
+
 ### Entregable obligatorio
 
 - [ ] Skills relevantes leídos y aplicados — listar cuáles se consultaron
+- [ ] Patrones de diseño GoF identificados y justificados — consultado `design_patterns/skill.md`
 - [ ] Arquitectura en capas con separación **global / dominio** y estructura de paquetes completa (`cl.klap.bysf.{modulo}.{aplicacion}` + `dominio/{nombre_dominio}/`)
 - [ ] Contratos de interfaces con package correcto en cada firma
 - [ ] Decisiones técnicas con justificación
 - [ ] Patrones de diseño aplicados
-- [ ] Análisis de seguridad: OWASP Top 10 + amenazas de stack (SSRF, SpEL, deserialización Kafka, Mass Assignment, Actuator) + controles NIST SP 800-53 + técnicas MITRE ATT&CK mapeadas por módulo
+- [ ] Análisis de seguridad: OWASP Top 10 + amenazas de stack según componentes identificados en Fase 1 (SSRF si hay HTTP externo · deserialización de mensajes/datos si hay mensajería o datos serializados · SpEL Injection si hay expresiones dinámicas · Mass Assignment si hay REST con binding automático · Actuator si está habilitado) + controles NIST SP 800-53 + técnicas MITRE ATT&CK mapeadas por módulo
 - [ ] Alineación con estándar KLAP BYSF confirmada
 - [ ] Desviaciones del estándar explícitamente señaladas
+- [ ] Archivos `application-{ambiente}.properties` diseñados para los 4 ambientes (local/develop/qa/master) — si el microservicio incluye Kafka
+- [ ] Modelo de concurrencia definido por componente: CPU-bound vs I/O-bound con herramienta propuesta (`CompletableFuture`, `@Async`, `ThreadPoolTaskExecutor`)
+- [ ] Race conditions identificadas con estrategia de mitigación explícita (isolation level, `SELECT FOR UPDATE`, idempotencia, lock distribuido)
 
 ---
 
@@ -149,9 +176,11 @@ El agente debe leer los skills correspondientes a los componentes identificados 
 - [ ] Estimación de tamaño por tarea (S/M/L)
 - [ ] Trazabilidad: cada tarea referencia sus `CA-XX` y `CL-XX`
 - [ ] Plan de tests por tarea (unitarios e integración distinguidos explícitamente)
-- [ ] Al menos un test de integración por cada componente que interactúe con infraestructura externa (Kafka, PostgreSQL, WebClient)
+- [ ] Al menos un test de integración por cada componente que interactúe con infraestructura externa (broker de mensajes, BD, API HTTP, sistema de archivos, u otro recurso externo identificado en Fase 1)
 - [ ] `~/.claude/commands/sdd-checklist.md` consultado y reportado
 - [ ] `~/.claude/commands/defectos-tipicos-checklist.md` consultado: las 6 categorías de defectos típicos verificadas en el plan — si alguna no está cubierta, consultar al dev con las preguntas sugeridas antes de cerrar el plan
+- [ ] Plan de tests incluye escenarios de concurrencia para componentes I/O-bound (ejecución paralela, orden de resolución, timeout handling)
+- [ ] Race conditions cubiertas con tests: acceso concurrente al mismo recurso e idempotencia verificada si el componente puede recibir la misma operación más de una vez
 - [ ] Si el dev pide más detalle de una tarea: entregarlo antes de cerrar la fase
 
 ---
@@ -203,6 +232,7 @@ Usar `use context7` al trabajar con APIs del stack para obtener docs de la versi
 | Skill | Cuándo leerlo |
 |-------|--------------|
 | `~/.claude/commands/skill-registry.md` | Siempre primero en modo fallback |
+| `~/.claude/commands/design_patterns/skill.md` | Siempre en Fase 2 — antes de proponer arquitectura |
 | `~/.claude/commands/kafka-config.md` | Antes de proponer `XxxKafkaConfig` |
 | `~/.claude/commands/kafka-listener.md` | Antes de proponer `XxxKafkaListener` |
 | `~/.claude/commands/processor.md` | Antes de proponer `XxxProcessor/XxxProcessorImpl` |
@@ -211,5 +241,6 @@ Usar `use context7` al trabajar con APIs del stack para obtener docs de la versi
 | `~/.claude/commands/exceptions.md` | Antes de definir jerarquía de excepciones |
 | `~/.claude/commands/testing.md` | Antes de definir plan de tests |
 | `~/.claude/commands/openapi.md` | Antes de proponer `OpenApiConfig` |
+| `~/.claude/commands/spring-properties.md` | Antes de proponer configuración Kafka/ambientes |
 | `~/.claude/commands/sdd-checklist.md` | En Fase 3 (validación) |
 | `~/.claude/commands/defectos-tipicos-checklist.md` | En Fase 1 (verificar CL-XX por categoría) y Fase 3 (verificar cobertura del plan) |
