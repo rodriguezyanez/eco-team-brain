@@ -1,5 +1,5 @@
 # Fase Spec — Diseño y Planificación SDD
-**Versión:** 2.0 · **Fecha:** 2026-07-06
+**Versión:** 2.1 · **Fecha:** 2026-07-13
 
 ---
 
@@ -97,15 +97,38 @@ FIN — el dev gatilla manualmente el workflow de implementación
 - [ ] Tablas PostgreSQL que gestiona
 - [ ] Servicios externos que consume (HTTP, gRPC, mensajería saliente, SDK externo, etc.)
 - [ ] Componentes a crear y sus dependencias
+- [ ] **Candidatos a Builder identificados en los requerimientos** — al analizar CAs y RFs, documentar:
+  - Objetos de dominio con 4+ campos donde al menos 2 son opcionales según los CAs
+  - Queries de búsqueda con 3+ filtros opcionales descritos en los requerimientos
+  → Documentar para que Fase 2 los diseñe con Builder desde el inicio. Si no hay ninguno: registrar "no aplica"
 - [ ] Requisitos funcionales (RF) con criterios de aceptación (`CA-XX`)
 - [ ] Requisitos no funcionales (RNF)
-- [ ] Operaciones CPU-bound identificadas (procesamiento pesado, transformación de datos en volumen, cálculos que saturan CPU)
-- [ ] Operaciones I/O-bound identificadas (llamadas HTTP, consultas BD, lectura/escritura de archivos, mensajería — cualquier operación que espera un recurso externo)
-- [ ] Escenarios de acceso concurrente documentados (múltiples instancias del servicio procesando el mismo recurso, acceso compartido a registros BD)
+- [ ] **Operaciones I/O-bound identificadas en el diseño propuesto:**
+  - Llamadas HTTP a servicios externos
+  - Queries a BD en secuencia que podrían paralelizarse
+  - Lecturas de mensajería o archivos en el hilo principal
+  → Para cada una: documentar si debe ser async o síncrona y por qué. Si no hay ninguna: registrar "no aplica"
+- [ ] **Operaciones CPU-bound identificadas en el diseño propuesto:**
+  - Transformaciones de datos en volumen, cálculos intensivos, generación de archivos (PDF, imágenes)
+  → Si no hay ninguna: registrar explícitamente "no aplica"
+- [ ] **Escenarios TOCTOU (check-then-act) potenciales en el diseño:**
+  - ¿Hay pares verificar→crear o leer→actualizar que podrían ejecutarse simultáneamente en N réplicas?
+  - ¿Hay recursos compartidos que múltiples instancias podrían modificar en paralelo?
+  → Para cada par: documentar qué ocurriría si dos instancias ejecutan simultáneamente
+- [ ] **Si el diseño incluye `@Scheduled`:** documentar réplicas previstas y requerimiento de lock distribuido desde el inicio
+  → Si no hay `@Scheduled`: registrar "no aplica"
+- [ ] **Escala horizontal asumida siempre:** el nuevo servicio correrá con N réplicas — diseñar concurrencia en consecuencia
 - [ ] Casos límite documentados como `CL-XX` (formatos incorrectos, nulos, rangos fuera de límite, caracteres especiales)
 - [ ] Defectos típicos del equipo cubiertos como `CL-XX`: duplicados, nulos, validación de entrada, casos de borde, trazabilidad, control de acceso — consultar `~/.claude/commands/defectos-tipicos-checklist.md` para verificar que las 6 categorías están representadas
 - [ ] Consulta a Neo4j confirmada (`memory_search`) o fallback a `~/.claude/commands/skill-registry.md`
 - [ ] Si proyecto nuevo: registrado en Neo4j al completar
+
+### Preguntas sugeridas al desarrollador
+
+El agente hace estas preguntas **solo si la información no es derivable del contexto**:
+
+- ¿Con cuántas réplicas correrá el servicio en producción? _(relevante para calibrar urgencia real de concurrencia y scheduler sin lock)_
+- ¿Hay Redis u otra herramienta de coordinación distribuida disponible en la infraestructura? _(informa las soluciones de concurrencia en Fase 2)_
 
 ---
 
@@ -133,34 +156,72 @@ El agente debe leer los skills correspondientes a los componentes identificados 
 
 Leer `design_patterns/skill.md` y contrastar contra los requerimientos de Fase 1. Si existe ambigüedad sobre el comportamiento del dominio, usar estas guías para identificar qué patrones proponer en la arquitectura:
 
+Antes de evaluar por categoría, cruzar explícitamente con los hallazgos de Fase 1:
+- **Candidatos a Builder detectados en Fase 1** → evaluar siempre en Creacionales. Builder debe aparecer en la tabla de aplicados o descartados.
+- **TOCTOU identificados en Fase 1** → evaluar Strategy/State según el tipo de recurso compartido y la frecuencia del acceso concurrente.
+- **`@Scheduled` en el diseño** → evaluar lock distribuido como parte del diseño de concurrencia.
+
+Luego evaluar por categoría:
+
 - **Creacionales** — ¿La creación de objetos de dominio varía según el tipo de mensaje o contexto? ¿Existen entidades que deben replicarse desde una plantilla base?
 - **Estructurales** — ¿Hay subsistemas externos (APIs, Kafka, BD) que el resto del código debería consumir sin conocer su complejidad? ¿Se necesita adaptar contratos de interfaces incompatibles?
 - **Comportamiento** — ¿La lógica de procesamiento cambia según el estado actual de la entidad o el tipo de evento recibido? ¿Varios componentes necesitan reaccionar ante un mismo cambio? ¿Se requiere registrar, revertir o auditar cambios de estado? ¿Existe una secuencia de pasos con variantes por tipo?
 
 ### Análisis de concurrencia y paralelismo
 
-Con base en los ítems CPU-bound, I/O-bound y acceso concurrente identificados en Fase 1, definir el modelo de concurrencia ANTES de proponer la arquitectura. Aplica independientemente del tipo de arquitectura (REST, eventos, batch, híbrida).
+Para cada hallazgo de Fase 1, documentar la decisión tomada con justificación. **No omitir ningún hallazgo** — la ausencia silenciosa no se acepta.
 
-- **CPU-bound** — ¿Hay operaciones de cómputo intensivo que deben aislarse del hilo principal de procesamiento? Evaluar `@Async` + `ThreadPoolTaskExecutor` o `CompletableFuture` para no degradar el tiempo de respuesta del servicio.
+**I/O-bound** — para cada operación identificada en Fase 1:
+- ¿Debe ser async? Si **sí**: proponer `CompletableFuture` / `WebClient` + `ThreadPoolTaskExecutor` dedicado especificando `corePoolSize`, `maxPoolSize`, `queueCapacity`, timeout máximo del Future y política de rechazo si el pool se agota.
+- Si **no**: justificar por qué síncrono es aceptable (operación rápida, consistencia transaccional requerida, etc.)
 
-- **I/O-bound** — ¿Hay múltiples operaciones que esperan recursos externos (HTTP, BD, archivos, colas) y pueden ejecutarse en paralelo sin dependencia entre sí? Evaluar `CompletableFuture.allOf()` para reducir la latencia total.
+**CPU-bound** — para cada operación identificada en Fase 1:
+- Evaluar `@Async` + `ThreadPoolTaskExecutor` para aislar del hilo principal.
+- Si no hay operaciones CPU-bound: confirmar explícitamente "no aplica" y no proponer ThreadPoolTaskExecutor innecesario.
 
-- **Race conditions** — ¿El servicio puede tener múltiples instancias o hilos accediendo al mismo registro o recurso compartido? Definir estrategia según el tipo de recurso: isolation level de transacción DB, `SELECT FOR UPDATE`, clave de idempotencia, o lock distribuido si el estado es externo al servicio.
+**TOCTOU (check-then-act)** — para cada par identificado en Fase 1, documentar las estrategias evaluadas y la elegida:
+
+| Estrategia | Evaluada | Decisión | Justificación |
+|------------|----------|----------|---------------|
+| `UNIQUE` constraint en BD | Sí | _Elegida / Descartada_ | _Razón_ |
+| `SELECT FOR UPDATE` | Sí | _Elegida / Descartada_ | _Razón_ |
+| Lock distribuido (Redis) | Sí | _Elegida / Descartada_ | _Razón_ |
+| Clave de idempotencia | Sí | _Elegida / Descartada_ | _Razón_ |
+
+**`@Scheduled` sin lock distribuido** — si el diseño incluye `@Scheduled`, documentar estrategia elegida y alternativas descartadas:
+
+| Estrategia | Evaluada | Decisión | Justificación |
+|------------|----------|----------|---------------|
+| `Redisson RLock.tryLock()` | Sí | _Elegida / Descartada_ | _Razón_ |
+| `ShedLock` (tabla en BD) | Sí | _Elegida / Descartada_ | _Razón_ |
+| `pg_try_advisory_lock` | Sí | _Elegida / Descartada_ | _Razón_ |
+| Reducir réplicas a 1 solo para el scheduler | Sí | _Elegida / Descartada_ | _Razón_ |
+
+**Si Fase 1 no identificó escenarios de concurrencia:**
+Documentar explícitamente: *"No se identificaron race conditions, TOCTOU, @Scheduled ni operaciones paralelizables. El servicio es stateless y no comparte recursos mutables entre hilos."* Esta justificación es **obligatoria** — la sección no puede quedar vacía ni omitirse.
 
 ### Entregable obligatorio
 
 - [ ] Skills relevantes leídos y aplicados — listar cuáles se consultaron
-- [ ] Patrones de diseño GoF identificados y justificados — consultado `design_patterns/skill.md`
+- [ ] **Patrones de diseño GoF aplicados** — nombre + componente + justificación basada en hallazgos de Fase 1
+- [ ] **Patrones de diseño GoF evaluados y descartados** — tabla obligatoria para cada patrón NO aplicado:
+
+  | Patrón | Evaluado | Decisión | Justificación |
+  |--------|----------|----------|---------------|
+  | Builder | Sí | _Aplica / No aplica_ | _Razón_ |
+  | ...    | ... | ... | ... |
+
+  **Regla:** ningún patrón puede omitirse en silencio. Si Builder no aparece en esta tabla, el entregable está incompleto.
 - [ ] Arquitectura en capas con separación **global / dominio** y estructura de paquetes completa (`cl.klap.bysf.{modulo}.{aplicacion}` + `dominio/{nombre_dominio}/`)
 - [ ] Contratos de interfaces con package correcto en cada firma
 - [ ] Decisiones técnicas con justificación
-- [ ] Patrones de diseño aplicados
 - [ ] Análisis de seguridad: OWASP Top 10 + amenazas de stack según componentes identificados en Fase 1 (SSRF si hay HTTP externo · deserialización de mensajes/datos si hay mensajería o datos serializados · SpEL Injection si hay expresiones dinámicas · Mass Assignment si hay REST con binding automático · Actuator si está habilitado) + controles NIST SP 800-53 + técnicas MITRE ATT&CK mapeadas por módulo
 - [ ] Alineación con estándar KLAP BYSF confirmada
 - [ ] Desviaciones del estándar explícitamente señaladas
 - [ ] Archivos `application-{ambiente}.properties` diseñados para los 4 ambientes (local/develop/qa/master) — si el microservicio incluye Kafka
-- [ ] Modelo de concurrencia definido por componente: CPU-bound vs I/O-bound con herramienta propuesta (`CompletableFuture`, `@Async`, `ThreadPoolTaskExecutor`)
-- [ ] Race conditions identificadas con estrategia de mitigación explícita (isolation level, `SELECT FOR UPDATE`, idempotencia, lock distribuido)
+- [ ] **Modelo de concurrencia** — para cada hallazgo de Fase 1: decisión async/sync + herramienta propuesta (`CompletableFuture`, `WebClient`, `@Async`) con `ThreadPoolTaskExecutor` dimensionado (corePoolSize / maxPoolSize / queueCapacity / timeout / política de rechazo) si aplica
+- [ ] **Race conditions** — para cada TOCTOU identificado en Fase 1: tabla de estrategias evaluadas + elegida + descartadas con justificación explícita
+- [ ] **Justificación de ausencia de concurrencia** — si no hay operaciones concurrentes ni race conditions: declaración explícita de por qué no aplica. Campo obligatorio — no puede quedar vacío
 
 ---
 
@@ -172,7 +233,15 @@ Con base en los ítems CPU-bound, I/O-bound y acceso concurrente identificados e
 
 - [ ] Reporte ✅/❌ por cada regla DO/DON'T del equipo
 - [ ] Verificación de naming conventions
-- [ ] Tabla de tareas atómicas con orden de dependencias
+- [ ] **Tabla de tareas atómicas** con orden de dependencias y columna **Tipo**:
+
+  **Tipos de tarea:**
+
+  | Tipo | Cuándo usar |
+  |------|-------------|
+  | `Nuevo` | Tarea ejecutada por el dev — nueva funcionalidad |
+  | `[EXT]` | Dependencia externa — ejecutada por otro equipo (infra, DevOps, seguridad). Bloquea tareas posteriores pero no la ejecuta el dev. Documentar quién la ejecuta y cómo confirmar que está lista |
+
 - [ ] Estimación de tamaño por tarea (S/M/L)
 - [ ] Trazabilidad: cada tarea referencia sus `CA-XX` y `CL-XX`
 - [ ] Plan de tests por tarea (unitarios e integración distinguidos explícitamente)
